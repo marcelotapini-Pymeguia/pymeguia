@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PymeGuía — Tu CFO en el bolsillo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --surface2: #f0f2f5;
+    --border: #e4e7ec;
+    --accent: #2563eb;
+    --accent-light: #eff6ff;
+    --accent2: #0891b2;
+    --success: #059669;
+    --success-light: #ecfdf5;
+    --danger: #dc2626;
+    --danger-light: #fef2f2;
+    --warn: #d97706;
+    --warn-light: #fffbeb;
+    --text: #111827;
+    --text2: #6b7280;
+    --text3: #9ca3af;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --font: 'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .screen { min-height: 100vh; }
+  .screen.hidden { display: none !important; }
+
+  /* ══════════════════════════════════════
+     LOADING SCREEN
+  ══════════════════════════════════════ */
+  #loading-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+  }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ══════════════════════════════════════
+     AUTH SCREEN
+  ══════════════════════════════════════ */
+  #auth-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--bg);
+  }
+
+  .auth-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: var(--shadow-md);
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .auth-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .auth-logo-icon {
+    width: 40px; height: 40px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .auth-logo-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .auth-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .auth-sub {
+    font-size: 15px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 32px;
+    font-weight: 400;
+  }
+
+  .btn-google {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 20px;
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .btn-google:hover {
+    background: var(--surface2);
+    border-color: #d1d5db;
+    box-shadow: var(--shadow-md);
+  }
+  .btn-google svg { width: 20px; height: 20px; }
+
+  .api-section-auth {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .api-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+  .api-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-family: var(--font);
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+    margin-bottom: 8px;
+  }
+  .api-input:focus { border-color: var(--accent); background: white; }
+  .api-input::placeholder { color: var(--text3); }
+  .api-hint {
+    font-size: 12px;
+    color: var(--text3);
+    line-height: 1.5;
+  }
+  .api-hint a { color: var(--accent); text-decoration: none; }
+
+  .auth-features {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .auth-feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text2);
+  }
+  .auth-feature-icon {
+    width: 28px; height: 28px;
+    background: var(--accent-light);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  /* ══════════════════════════════════════
+     MAIN APP
+  ══════════════════════════════════════ */
+  #app-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: var(--bg);
+  }
+
+  /* Header */
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-logo {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+  .header-center {
+    flex: 1;
+    max-width: 260px;
+    margin: 0 auto;
+  }
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+  .progress-text {
+    font-size: 11px;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .user-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--border);
+  }
+  .user-avatar-placeholder {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .btn-menu {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 12px;
+    color: var(--text2);
+    cursor: pointer;
+    font-family: var(--font);
+    transition: all 0.15s;
+  }
+  .btn-menu:hover { background: var(--surface2); }
+
+  /* Chat */
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+  }
+  .chat-messages::-webkit-scrollbar { width: 3px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .msg-wrap {
+    display: flex;
+    gap: 10px;
+    max-width: 680px;
+    animation: msgIn 0.25s ease both;
+  }
+  .msg-wrap.user {
+    flex-direction: row-reverse;
+    margin-left: auto;
+  }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .msg-avatar.ai {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .msg-avatar.user {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+
+  .msg-bubble {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: calc(100% - 44px);
+  }
+  .msg-wrap.ai .msg-bubble {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top-left-radius: 4px;
+    color: var(--text);
+    box-shadow: var(--shadow);
+  }
+  .msg-wrap.user .msg-bubble {
+    background: var(--accent);
+    color: white;
+    border-top-right-radius: 4px;
+  }
+
+  /* Typing */
+  .typing-dots {
+    display: flex;
+    gap: 4px;
+    padding: 4px 2px;
+    align-items: center;
+  }
+  .typing-dots span {
+    width: 6px; height: 6px;
+    background: var(--text3);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-5px); opacity: 1; }
+  }
+
+  /* Error message */
+  .msg-error {
+    background: var(--danger-light) !important;
+    border-color: #fca5a5 !important;
+    color: var(--danger) !important;
+    font-size: 14px !important;
+  }
+
+  /* Input */
+  .chat-input-area {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 14px 20px 20px;
+  }
+  .chat-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .chat-textarea {
+    flex: 1;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    outline: none;
+    resize: none;
+    min-height: 48px;
+    max-height: 120px;
+    transition: border-color 0.15s, background 0.15s;
+    line-height: 1.5;
+  }
+  .chat-textarea:focus {
+    border-color: var(--accent);
+    background: white;
+  }
+  .chat-textarea::placeholder { color: var(--text3); }
+
+  .btn-voice {
+    width: 48px; height: 48px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    color: var(--text2);
+  }
+  .btn-voice:hover { background: var(--border); color: var(--text); }
+  .btn-voice.recording {
+    background: #fee2e2;
+    border-color: var(--danger);
+    color: var(--danger);
+    animation: pulse 1s infinite;
+  }
+  .btn-voice svg { width: 18px; height: 18px; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .btn-send {
+    width: 48px; height: 48px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn-send:hover { opacity: 0.9; }
+  .btn-send:active { transform: scale(0.96); }
+  .btn-send:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+  .btn-send svg { width: 18px; height: 18px; fill: white; }
+
+  .input-hint {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 8px;
+  }
+
+  /* ══════════════════════════════════════
+     RESULTS SCREEN
+  ══════════════════════════════════════ */
+  #results-screen {
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .results-header-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .results-header-logo {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .results-body {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  .results-title-section {
+    margin-bottom: 28px;
+    animation: fadeUp 0.4s ease both;
+  }
+  .results-eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .results-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .results-subtitle {
+    font-size: 15px;
+    color: var(--text2);
+  }
+
+  /* Status banner */
+  .status-banner {
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: fadeUp 0.4s ease 0.05s both;
+  }
+  .status-banner.success { background: var(--success-light); border: 1px solid #a7f3d0; }
+  .status-banner.warn { background: var(--warn-light); border: 1px solid #fde68a; }
+  .status-banner.danger { background: var(--danger-light); border: 1px solid #fca5a5; }
+  .status-icon { font-size: 26px; }
+  .status-text-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .status-text-sub { font-size: 13px; color: var(--text2); }
+
+  /* Metrics grid */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.4s ease both;
+  }
+  .metric-card.accent-border { border-left: 3px solid var(--accent); }
+  .metric-card.success-border { border-left: 3px solid var(--success); }
+  .metric-card.danger-border { border-left: 3px solid var(--danger); }
+  .metric-card.warn-border { border-left: 3px solid var(--warn); }
+
+  .metric-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+  .metric-value {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+    line-height: 1.1;
+  }
+  .metric-desc {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.4;
+  }
+
+  /* Cost table */
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.4s ease 0.1s both;
+  }
+  .section-card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cost-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .cost-row:last-child { border-bottom: none; }
+  .cost-row.total {
+    background: var(--surface2);
+    font-weight: 600;
+  }
+  .cost-label { color: var(--text2); }
+  .cost-value { font-weight: 500; color: var(--text); }
+  .cost-row.total .cost-value { color: var(--accent); font-size: 15px; }
+
+  /* Advice */
+  .advice-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.4s ease 0.15s both;
+  }
+  .advice-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent2);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .advice-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* Philosophy */
+  .philosophy-card {
+    background: var(--accent-light);
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 28px;
+    animation: fadeUp 0.4s ease 0.2s both;
+  }
+  .philosophy-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .philosophy-text {
+    font-size: 14px;
+    color: #1e40af;
+    line-height: 1.7;
+  }
+
+  /* Results steps */
+  .results-step {
+    margin-bottom: 24px;
+    animation: fadeUp 0.4s ease both;
+  }
+  .results-step-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .results-gap-note {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .gap-warn {
+    color: var(--warn);
+    background: var(--warn-light);
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    display: block;
+  }
+  .gap-ok {
+    color: var(--success);
+    background: var(--success-light);
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    display: block;
+  }
+
+  /* Actions */
+  .results-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.4s ease 0.25s both;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 12px 22px;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 22px;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-secondary:hover { background: var(--surface2); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 500px) {
+    .auth-card { padding: 32px 24px; }
+    .metrics-grid { grid-template-columns: 1fr; }
+    .app-header { padding: 10px 14px; }
+    .chat-messages { padding: 16px 14px; }
+    .chat-input-area { padding: 10px 14px 16px; }
+    .results-body { padding: 20px 14px 48px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen" class="screen">
+  <div class="spinner"></div>
+</div>
+
+<!-- AUTH -->
+<div id="auth-screen" class="screen hidden">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">📊</div>
+      <div class="auth-logo-text">PymeGuía</div>
+    </div>
+
+    <h1 class="auth-title">Descubrí si tu precio es correcto</h1>
+    <p class="auth-sub">Una conversación simple con IA que en 15 minutos te muestra la verdad de tus números. Sin saber de finanzas.</p>
+
+    <div class="auth-features">
+      <div class="auth-feature">
+        <div class="auth-feature-icon">💬</div>
+        Solo respondés preguntas — la IA clasifica y calcula
+      </div>
+      <div class="auth-feature">
+        <div class="auth-feature-icon">💾</div>
+        Tu progreso se guarda automáticamente
+      </div>
+      <div class="auth-feature">
+        <div class="auth-feature-icon">📱</div>
+        Funciona desde el celular o la computadora
+      </div>
+    </div>
+
+    <button class="btn-google" onclick="loginWithGoogle()">
+      <svg viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Entrar con Google
+    </button>
+
+    <div class="api-section-auth">
+      <div class="api-label">API Key de Anthropic</div>
+      <input
+        type="password"
+        class="api-input"
+        id="api-key-input"
+        placeholder="sk-ant-..."
+        autocomplete="off"
+      />
+      <div class="api-hint">
+        Obtenés tu key gratis en <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Se guarda en tu cuenta y no tenés que ingresarla de nuevo.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP CHAT -->
+<div id="app-screen" class="screen hidden" style="display:none;">
+  <div class="app-header">
+    <div class="header-logo">PymeGuía</div>
+    <div class="header-center">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-text" id="progress-text">Iniciando...</div>
+    </div>
+    <div class="header-right">
+      <div class="user-avatar-placeholder" id="user-initial">?</div>
+      <button class="btn-menu" onclick="showMenu()">···</button>
+    </div>
+  </div>
+
+  <div class="chat-messages" id="chat-messages"></div>
+
+  <div class="chat-input-area">
+    <div class="chat-input-row">
+      <textarea
+        class="chat-textarea"
+        id="chat-input"
+        placeholder="Escribí tu respuesta..."
+        rows="1"
+        onkeydown="handleKeyDown(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button class="btn-voice" id="voice-btn" onclick="toggleVoice()" title="Hablar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+      </button>
+      <button class="btn-send" id="send-btn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+    <div class="input-hint">Enter para enviar · Shift+Enter para nueva línea</div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results-screen" class="screen hidden">
+  <div class="results-header-bar">
+    <div class="results-header-logo">PymeGuía</div>
+    <button class="btn-secondary" onclick="showMenu()" style="padding:8px 14px;font-size:13px;">···</button>
+  </div>
+  <div class="results-body" id="results-body"></div>
+</div>
+
+<!-- Firebase + App Logic -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ── Firebase config ──
+const firebaseConfig = {
+  apiKey: "AIzaSyAwEEj-sZiDS9jJeypXbfhG6Ep7eBv10AM",
+  authDomain: "pymeguia-f51ea.firebaseapp.com",
+  projectId: "pymeguia-f51ea",
+  storageBucket: "pymeguia-f51ea.firebasestorage.app",
+  messagingSenderId: "450854478158",
+  appId: "1:450854478158:web:4464cfe290860cb2b67e1f"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+// ── State ──
+let currentUser = null;
+let apiKey = '';
+let conversationHistory = [];
+let isLoading = false;
+let currentBlock = 1;
+
+// ── Screen management ──
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.add('hidden');
+    s.style.display = 'none';
+  });
+  const el = document.getElementById(id);
+  el.classList.remove('hidden');
+  el.style.display = id === 'app-screen' ? 'flex' : 'block';
+  if (id === 'loading-screen') el.style.display = 'flex';
+  if (id === 'auth-screen') el.style.display = 'flex';
+}
+
+// ── Auth state listener ──
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    await loadUserData();
+  } else {
+    currentUser = null;
+    conversationHistory = [];
+    showScreen('auth-screen');
+  }
+});
+
+async function loadUserData() {
+  try {
+    const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      apiKey = data.apiKey || '';
+
+      // Restore conversation if exists
+      if (data.conversationHistory && data.conversationHistory.length > 0 && data.currentBlock && data.currentBlock < 5) {
+        conversationHistory = data.conversationHistory;
+        currentBlock = data.currentBlock || 1;
+        showScreen('app-screen');
+        setUserAvatar();
+        restoreConversation(data.conversationHistory);
+        updateProgress(currentBlock);
+        return;
+      }
+    }
+
+    // New user or no active conversation
+    if (!apiKey) {
+      // Need API key
+      showScreen('auth-screen');
+    } else {
+      showScreen('app-screen');
+      setUserAvatar();
+      initChat();
+    }
+  } catch(e) {
+    showScreen('auth-screen');
+  }
+}
+
+function setUserAvatar() {
+  const initial = document.getElementById('user-initial');
+  const name = currentUser.displayName || currentUser.email || '?';
+  initial.textContent = name.charAt(0).toUpperCase();
+}
+
+// ── Login ──
+window.loginWithGoogle = async function() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key || !key.startsWith('sk-ant-')) {
+    alert('Por favor ingresá una API key válida de Anthropic (empieza con sk-ant-)');
+    return;
+  }
+
+  try {
+    const result = await signInWithPopup(auth, provider);
+    currentUser = result.user;
+    apiKey = key;
+
+    // Save user data
+    await setDoc(doc(db, 'users', currentUser.uid), {
+      email: currentUser.email,
+      name: currentUser.displayName,
+      apiKey: key,
+      createdAt: new Date().toISOString(),
+      conversationHistory: [],
+      currentBlock: 1
+    }, { merge: true });
+
+    showScreen('app-screen');
+    setUserAvatar();
+    initChat();
+  } catch(e) {
+    if (e.code !== 'auth/popup-closed-by-user') {
+      alert('Error al iniciar sesión: ' + e.message);
+    }
+  }
+};
+
+// ── Menu ──
+window.showMenu = function() {
+  const options = ['Nueva conversación', 'Cerrar sesión'];
+  const choice = confirm('¿Qué querés hacer?\n\nOK = Nueva conversación\nCancelar = Cerrar sesión');
+  if (choice) {
+    newConversation();
+  } else {
+    signOut(auth).then(() => showScreen('auth-screen'));
+  }
+};
+
+function newConversation() {
+  conversationHistory = [];
+  currentBlock = 1;
+  document.getElementById('chat-messages').innerHTML = '';
+  saveConversation();
+  showScreen('app-screen');
+  initChat();
+}
+
+window.analyzeAnother = function() {
+  newConversation();
+};
+
+// ── Save conversation to Firestore ──
+async function saveConversation() {
+  if (!currentUser) return;
+  try {
+    await updateDoc(doc(db, 'users', currentUser.uid), {
+      conversationHistory: conversationHistory,
+      currentBlock: currentBlock,
+      lastActive: new Date().toISOString()
+    });
+  } catch(e) {
+    // Silent fail — don't interrupt UX
+  }
+}
+
+// ── Restore conversation UI ──
+function restoreConversation(history) {
+  const container = document.getElementById('chat-messages');
+  container.innerHTML = '';
+  history.forEach(msg => {
+    if (msg.role === 'user' || msg.role === 'assistant') {
+      addMessage(msg.role === 'assistant' ? 'ai' : 'user', msg.content);
+    }
+  });
+}
+
+// ── System prompt ──
+function buildSystemPrompt() {
+  const now = new Date();
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const cm = months[now.getMonth()];
+  const cy = now.getFullYear();
+  const prev3 = [
+    months[(now.getMonth()-3+12)%12],
+    months[(now.getMonth()-2+12)%12],
+    months[(now.getMonth()-1+12)%12]
+  ];
+
+  return `Sos PymeGuía, una guía financiera conversacional para emprendedores y dueños de pymes hispanohablantes. Tu rol es el de un CFO y analista financiero con 20 años de experiencia asesorando pymes. Hablás con autoridad pero de forma simple y directa.
+
+FECHA ACTUAL: ${cm} de ${cy}
+MESES DE REFERENCIA PARA HISTORIAL: ${prev3[0]}, ${prev3[1]} y ${prev3[2]}
+
+## FOCO Y LÍMITES
+Tu único tema es: finanzas, costos, precios, rentabilidad y gestión económica de negocios.
+Si el usuario pregunta algo fuera de ese ámbito (clima, recetas, política, tecnología, etc.), respondés exactamente:
+"Mi especialidad es la salud financiera de tu negocio. Para eso estoy. ¿Seguimos con el análisis?"
+No des explicaciones adicionales ni te disculpes. Solo redirigís y seguís.
+
+## PERSONALIDAD Y TONO
+- Directo, claro, con autoridad de consultor experimentado
+- Comentarios MESURADOS: solo cuando genuinamente aportan valor — detectás un problema claro, cerrás un bloque, o el emprendedor necesita motivación en un momento clave
+- Nunca comentés mecánicamente cada respuesta
+- UNA sola pregunta por mensaje, nunca varias juntas
+- Sos INQUISIDOR: no aceptés respuestas vagas sin explorarlas. Si dice "gasto más o menos 500 en insumos", preguntás qué insumos, cuánto de cada uno, con qué frecuencia
+- Tirás del hilo hasta encontrar el último costo oculto
+
+## MEMORIA FLEXIBLE
+El emprendedor puede acordarse de algo en cualquier momento de la conversación — un costo que olvidó, un gasto que no mencionó. Cuando pase:
+- Incorporás el dato nuevo sin drama
+- Recalculás mentalmente
+- Confirmás brevemente: "Perfecto, lo sumo al análisis."
+- Seguís adelante
+Nunca decís que "ya pasó ese bloque" o que "no podés agregar eso ahora". Siempre podés.
+
+## PRECIO RECOMENDADO
+Calculá el precio recomendado usando un margen del 30% sobre el costo total — ni el mejor escenario ni el peor. Es un margen conservador y sostenible para una pyme.
+Fórmula: precio_recomendado = costo_total / (1 - 0.30)
+
+## CONSEJOS — TONO
+Cuando des consejos sobre precio, usá lenguaje de sugerencia, no de afirmación taxativa:
+- NO: "Subí el precio a 65 dólares"
+- SÍ: "Podrías considerar subir el precio a un rango de 60 a 65 dólares"
+Siempre explicá el razonamiento detrás de la sugerencia con los datos reales del negocio.
+Nunca uses afirmaciones absolutas — usá "podrías", "considerá", "una opción sería", "te recomendaría evaluar".
+1. La verdad sin anestesia: "Tus clientes valorarán tu trabajo y lo pagarán. Los que no, probablemente nunca fueron tu cliente ideal."
+2. Las palancas concretas basadas en SUS datos: qué costos puede bajar, qué puede optimizar, qué canal le conviene más
+3. Cierre con convicción de consultor que conoce los números
+
+Estas respuestas deben ser específicas a los datos del negocio que ya recopilaste — no genéricas.
+
+## FLUJO — 5 BLOQUES
+
+### BLOQUE 1 — CONOCER EL NEGOCIO
+1. Nombre del negocio
+2. Qué hace/vende (descripción libre — explorá si hay algo que no quedó claro)
+3. Antigüedad del negocio
+4. Tipo de venta: productos que fabrica / productos que revende / servicios / ambos
+5. Volumen mensual aproximado de ventas (unidades o trabajos) — si es vago, pedí que detalle
+6. Precio actual de venta
+
+### BLOQUE 2 — DESMENUZAR EL PRODUCTO
+Según tipo:
+FABRICA: componentes y costos → rendimiento por insumo → embalaje/materiales (incluyendo packaging) → tiempo de producción → quién pone el tiempo y a qué valor → herramientas/equipos (costo + años de uso para amortización)
+REVENDE: precio de compra → flete de compra → preparación antes de vender
+SERVICIOS: descripción del trabajo típico → duración → quién lo hace y qué cobra → materiales → transporte
+
+### BLOQUE 3 — COSTOS FIJOS
+Lugar de trabajo y alquiler → servicios (luz, internet, tel) → personal fijo y sueldos → software y suscripciones → otros gastos fijos → publicidad (fija o variable)
+IMPUESTOS: cuota fija mensual (autónomo, monotributo) → impuestos sobre facturación (%, si no sabe dar estimado por país con disclaimer: "Es una aproximación orientativa — confirmalo con tu contador o asesor fiscal.")
+
+### BLOQUE 4 — COSTOS VARIABLES
+Envíos por venta → comisiones de plataformas → comisiones de medios de pago → devoluciones → publicidad variable
+
+### BLOQUE 5 — DIAGNÓSTICO
+Preguntá el margen deseado (20%, 30%, 50% o personalizado) y mostrá resultados.
+
+## MANEJO DE RESPUESTAS VAGAS — 3 NIVELES
+Nivel 1: Meses reales ("¿Recordás cuánto vendiste en ${prev3[0]}, ${prev3[1]} y ${prev3[2]}?")
+Nivel 2: "¿Tenés algún registro — cuaderno, celular, pedidos de WhatsApp?"
+Nivel 3: "Uso un estimado promedio. Lo ajustás después con los números reales."
+
+## ESTIMADOS DE IMPUESTOS POR PAÍS
+España: ~20% entre IVA neto e IRPF para autónomos
+Argentina: monotributo es cuota fija; RI paga IVA + Ganancias (~35% combinado)
+México: ~16% IVA + ~30% ISR régimen general
+Chile: ~19% IVA + ~25% impuesto a la renta
+Siempre con disclaimer de consultar asesor fiscal.
+
+## CUÁNDO MOSTRAR RESULTADOS
+Cuando tengas todos los datos, terminá tu mensaje con exactamente esto:
+[RESULTADOS_LISTOS]
+{"negocio":"nombre","producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_actual_pct":0,"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes":0,"moneda":"€","desglose":[{"concepto":"nombre","valor":0}],"consejo_principal":"consejo específico basado en los datos reales del negocio","problema_detectado":"problema principal detectado"}
+
+IMPORTANTE: El JSON debe estar en UNA SOLA LÍNEA, sin saltos de línea dentro, sin markdown, sin backticks.
+
+## REGLAS CRÍTICAS
+- NUNCA dos preguntas en el mismo mensaje
+- Comentarios mesurados — solo cuando aporten valor real
+- Nunca preguntes dos veces lo mismo
+- Aceptá datos nuevos en cualquier momento de la conversación
+- Usá la moneda correcta según el país del usuario
+- El JSON siempre en una sola línea compacta`;
+}
+
+// ── Init chat ──
+async function initChat() {
+  updateProgress(1);
+  const welcomeMsg = 'Hola, soy PymeGuía 👋 Estoy acá para ayudarte a entender los números de tu negocio y asegurarme de que tu precio de venta tenga sentido. Vamos a revisarlo juntos, paso a paso. ¿Empezamos?';
+  addMessage('ai', welcomeMsg);
+  conversationHistory = [
+    { role: 'assistant', content: welcomeMsg }
+  ];
+  await saveConversation();
+}
+
+// ── Send message ──
+window.sendMessage = async function() {
+  if (isLoading) return;
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  addMessage('user', text);
+  conversationHistory.push({ role: 'user', content: text });
+
+  setLoading(true);
+  showTyping();
+
+  try {
+    const response = await callAI(conversationHistory);
+    hideTyping();
+
+    if (response.includes('[RESULTADOS_LISTOS]')) {
+      const parts = response.split('[RESULTADOS_LISTOS]');
+      const beforeText = parts[0].trim();
+      if (beforeText) addMessage('ai', beforeText);
+
+      try {
+        // Extract JSON more robustly
+        let jsonStr = parts[1].trim();
+        // Remove markdown code blocks if present
+        jsonStr = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
+        // Find the JSON object
+        const startIdx = jsonStr.indexOf('{');
+        const endIdx = jsonStr.lastIndexOf('}');
+        if (startIdx !== -1 && endIdx !== -1) {
+          jsonStr = jsonStr.substring(startIdx, endIdx + 1);
+        }
+        const data = JSON.parse(jsonStr);
+        window.lastResultsData = data;
+        conversationHistory.push({ role: 'assistant', content: response });
+        await saveConversation();
+        updateProgress(5);
+        setTimeout(() => showResults(data), 600);
+      } catch(e) {
+        console.error('JSON parse error:', e);
+        // Ask AI to reformat
+        conversationHistory.push({ role: 'assistant', content: response });
+        conversationHistory.push({ role: 'user', content: 'Por favor mostrá los resultados finales.' });
+        const retry = await callAI(conversationHistory);
+        hideTyping();
+        if (retry.includes('[RESULTADOS_LISTOS]')) {
+          const retryParts = retry.split('[RESULTADOS_LISTOS]');
+          try {
+            let retryJson = retryParts[1].trim().replace(/```json/g, '').replace(/```/g, '').trim();
+            const si = retryJson.indexOf('{');
+            const ei = retryJson.lastIndexOf('}');
+            if (si !== -1 && ei !== -1) retryJson = retryJson.substring(si, ei + 1);
+            const data = JSON.parse(retryJson);
+            conversationHistory.push({ role: 'assistant', content: retry });
+            await saveConversation();
+            updateProgress(5);
+            setTimeout(() => showResults(data), 600);
+          } catch(e2) {
+            addMessage('ai', 'Hubo un problema al generar los resultados. Escribí "mostrame los resultados" para intentar de nuevo.');
+          }
+        } else {
+          addMessage('ai', retry);
+          conversationHistory.push({ role: 'assistant', content: retry });
+        }
+      }
+    } else {
+      addMessage('ai', response);
+      conversationHistory.push({ role: 'assistant', content: response });
+      detectAndUpdateBlock(response);
+      await saveConversation();
+    }
+  } catch(e) {
+    hideTyping();
+    addMessage('ai', getFriendlyError(e.message), true);
+  }
+
+  setLoading(false);
+};
+
+function getFriendlyError(msg) {
+  if (msg.includes('exceeded_limit') || msg.includes('rate')) {
+    return 'Demasiadas consultas en poco tiempo. Esperá unos segundos y volvé a intentarlo. 🙏';
+  }
+  if (msg.includes('invalid') || msg.includes('api_key')) {
+    return 'La API key no es válida. Verificá que esté bien copiada en console.anthropic.com';
+  }
+  if (msg.includes('insufficient') || msg.includes('credit')) {
+    return 'Te quedaste sin créditos en Anthropic. Recargá desde console.anthropic.com → Billing.';
+  }
+  return 'Hubo un error de conexión. Verificá tu internet y volvé a intentarlo.';
+}
+
+function detectAndUpdateBlock(msg) {
+  const lower = msg.toLowerCase();
+  if (lower.includes('gastos fijos') || lower.includes('alquiler') || lower.includes('cuota de autónomo')) {
+    updateProgress(3);
+  } else if (lower.includes('comisión') || lower.includes('envío por venta') || lower.includes('medio de pago')) {
+    updateProgress(4);
+  } else if (lower.includes('costo total') || lower.includes('precio mínimo') || lower.includes('margen')) {
+    updateProgress(5);
+  } else if (lower.includes('materia prima') || lower.includes('insumo') || lower.includes('cuánto tardás')) {
+    updateProgress(2);
+  }
+}
+
+// ── API call ──
+async function callAI(messages) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 1024,
+      system: buildSystemPrompt(),
+      messages: messages
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || response.statusText || 'API error');
+  }
+
+  const data = await response.json();
+  return data.content[0].text;
+}
+
+// ── Voice input ──
+let recognition = null;
+let isRecording = false;
+
+window.toggleVoice = function() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Tu navegador no soporta reconocimiento de voz. Usá Chrome o Edge.');
+    return;
+  }
+
+  if (isRecording) {
+    recognition.stop();
+    return;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'es-AR';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    isRecording = true;
+    document.getElementById('voice-btn').classList.add('recording');
+    document.getElementById('chat-input').placeholder = '🎤 Escuchando...';
+  };
+
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    const input = document.getElementById('chat-input');
+    input.value = transcript;
+    autoResize(input);
+  };
+
+  recognition.onend = () => {
+    isRecording = false;
+    document.getElementById('voice-btn').classList.remove('recording');
+    document.getElementById('chat-input').placeholder = 'Escribí tu respuesta...';
+  };
+
+  recognition.onerror = () => {
+    isRecording = false;
+    document.getElementById('voice-btn').classList.remove('recording');
+    document.getElementById('chat-input').placeholder = 'Escribí tu respuesta...';
+  };
+
+  recognition.start();
+};
+
+// ── Voice input ──
+function addMessage(role, text, isError = false) {
+  const container = document.getElementById('chat-messages');
+  const wrap = document.createElement('div');
+  wrap.className = `msg-wrap ${role}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = `msg-avatar ${role}`;
+  avatar.textContent = role === 'ai' ? 'PG' : '👤';
+
+  const bubble = document.createElement('div');
+  bubble.className = `msg-bubble ${isError ? 'msg-error' : ''}`;
+  bubble.innerHTML = text
+    .replace(/\n/g, '<br>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  wrap.appendChild(avatar);
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTyping() {
+  const container = document.getElementById('chat-messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap ai';
+  wrap.id = 'typing-indicator';
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar ai';
+  avatar.textContent = 'PG';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+
+  wrap.appendChild(avatar);
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+  container.scrollTop = container.scrollHeight;
+}
+
+function hideTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+function setLoading(val) {
+  isLoading = val;
+  document.getElementById('send-btn').disabled = val;
+  document.getElementById('chat-input').disabled = val;
+}
+
+function updateProgress(block) {
+  currentBlock = block;
+  const pct = ((block - 1) / 5) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  const labels = {1:'Tu negocio',2:'Tus costos',3:'Gastos fijos',4:'Costos de venta',5:'Diagnóstico'};
+  document.getElementById('progress-text').textContent = labels[block] || '';
+}
+
+window.handleKeyDown = function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    window.sendMessage();
+  }
+};
+
+window.autoResize = function(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+};
+
+// ── Results ──
+function showResults(data) {
+  showScreen('results-screen');
+  const currency = data.moneda || '€';
+  const margen = data.margen_actual_pct || 0;
+  const gananciaPorUnidad = data.precio_actual - data.costo_total;
+
+  let statusClass = 'success', statusIcon = '✅', statusTitle = 'Buen margen', statusSub = `Ganás ${currency}${fmt(gananciaPorUnidad)} por unidad — margen del ${margen.toFixed(1)}%`;
+  if (margen < 0) {
+    statusClass = 'danger'; statusIcon = '🚨';
+    statusTitle = 'Estás perdiendo dinero';
+    statusSub = `Perdés ${currency}${fmt(Math.abs(gananciaPorUnidad))} por cada unidad que vendés`;
+  } else if (margen < 20) {
+    statusClass = 'warn'; statusIcon = '⚠️';
+    statusTitle = 'Margen muy ajustado';
+    statusSub = `Ganás ${currency}${fmt(gananciaPorUnidad)} por unidad — cualquier imprevisto te come la ganancia`;
+  }
+
+  // Build clean desglose — only costs, no derived metrics
+  const desgloseItems = data.desglose && data.desglose.length > 0
+    ? data.desglose.filter(r => r.valor > 0)
+    : [
+        { concepto: 'Costos directos de producción', valor: data.costo_directo },
+        { concepto: 'Gastos fijos proporcionales', valor: data.costo_fijo_unit },
+        { concepto: 'Costos variables por venta', valor: data.costo_variable },
+      ].filter(r => r.valor > 0);
+
+  // Recalculate costo_total from desglose to ensure consistency
+  const costoTotalCalculado = desgloseItems.reduce((sum, r) => sum + r.valor, 0);
+  const costoTotal = costoTotalCalculado > 0 ? costoTotalCalculado : data.costo_total;
+  const gananciaPorUnidadReal = data.precio_actual - costoTotal;
+  const gananciaRecomendada = data.precio_recomendado - costoTotal;
+  const gananciaMensualReal = gananciaPorUnidadReal * data.unidades_mes;
+  const gananciaMensualRec = gananciaRecomendada * data.unidades_mes;
+  const gananciaAnualRec = gananciaMensualRec * 12;
+
+  const body = document.getElementById('results-body');
+  body.innerHTML = `
+
+    <!-- HEADER -->
+    <div class="results-title-section">
+      <div class="results-eyebrow">Análisis completado</div>
+      <div class="results-title">${data.negocio}</div>
+      <div class="results-subtitle">${data.producto}</div>
+    </div>
+
+    <!-- PASO 1: LO QUE TE CUESTA -->
+    <div class="results-step">
+      <div class="results-step-label">① Lo que te cuesta producir cada unidad</div>
+      <div class="section-card">
+        <div class="section-card-header">📦 Desglose de costos</div>
+        ${desgloseItems.map(r => `
+          <div class="cost-row">
+            <span class="cost-label">${r.concepto}</span>
+            <span class="cost-value">${currency}${fmt(r.valor)}</span>
+          </div>`).join('')}
+        <div class="cost-row total">
+          <span class="cost-label">COSTO TOTAL por unidad</span>
+          <span class="cost-value">${currency}${fmt(costoTotal)}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 2: LO QUE COBRÁS HOY -->
+    <div class="results-step">
+      <div class="results-step-label">② Lo que cobrás hoy y qué te deja</div>
+      <div class="status-banner ${statusClass}">
+        <div class="status-icon">${statusIcon}</div>
+        <div>
+          <div class="status-text-title">${statusTitle}</div>
+          <div class="status-text-sub">${statusSub}</div>
+        </div>
+      </div>
+      <div class="metrics-grid" style="grid-template-columns: repeat(2, 1fr);">
+        <div class="metric-card">
+          <div class="metric-label">Tu precio actual</div>
+          <div class="metric-value">${currency}${fmt(data.precio_actual)}</div>
+          <div class="metric-desc">Lo que cobrás hoy</div>
+        </div>
+        <div class="metric-card ${margen < 0 ? 'danger-border' : margen < 20 ? 'warn-border' : 'success-border'}">
+          <div class="metric-label">Ganancia por unidad</div>
+          <div class="metric-value" style="color: ${margen < 0 ? 'var(--danger)' : margen < 20 ? 'var(--warn)' : 'var(--success)'}">
+            ${currency}${fmt(gananciaPorUnidadReal)}
+          </div>
+          <div class="metric-desc">Precio actual − costo total</div>
+        </div>
+        <div class="metric-card" style="grid-column: 1/-1;">
+          <div class="metric-label">Ganancia mensual actual</div>
+          <div class="metric-value" style="color: ${gananciaMensualReal < 0 ? 'var(--danger)' : 'var(--text)'}">
+            ${currency}${fmt(gananciaMensualReal)}
+          </div>
+          <div class="metric-desc">Con ${data.unidades_mes} unidades/mes a tu precio actual</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 3: LO QUE DEBERÍAS COBRAR -->
+    <div class="results-step">
+      <div class="results-step-label">③ Lo que deberías cobrar</div>
+      <div class="metrics-grid" style="grid-template-columns: repeat(2, 1fr);">
+        <div class="metric-card danger-border">
+          <div class="metric-label">Precio mínimo</div>
+          <div class="metric-value">${currency}${fmt(costoTotal)}</div>
+          <div class="metric-desc">Tu costo total — por debajo de esto perdés dinero</div>
+        </div>
+        <div class="metric-card accent-border">
+          <div class="metric-label">Precio recomendado</div>
+          <div class="metric-value" style="color: var(--accent)">${currency}${fmt(data.precio_recomendado)}</div>
+          <div class="metric-desc">Para ganar bien y tener margen para crecer</div>
+        </div>
+      </div>
+      <div class="results-gap-note">
+        ${data.precio_actual < data.precio_recomendado
+          ? `<span class="gap-warn">⬆️ Diferencia con tu precio actual: ${currency}${fmt(data.precio_recomendado - data.precio_actual)} por unidad</span>`
+          : `<span class="gap-ok">✅ Tu precio actual ya está por encima del recomendado</span>`
+        }
+      </div>
+    </div>
+
+    <!-- PASO 4: PROYECCIÓN -->
+    <div class="results-step">
+      <div class="results-step-label">④ Qué ganarías al precio recomendado</div>
+      <div class="metrics-grid" style="grid-template-columns: repeat(2, 1fr);">
+        <div class="metric-card success-border">
+          <div class="metric-label">Ganancia mensual</div>
+          <div class="metric-value" style="color: var(--success)">${currency}${fmt(gananciaMensualRec)}</div>
+          <div class="metric-desc">Con ${data.unidades_mes} unidades/mes</div>
+        </div>
+        <div class="metric-card success-border">
+          <div class="metric-label">Ganancia anual proyectada</div>
+          <div class="metric-value" style="color: var(--success)">${currency}${fmt(gananciaAnualRec)}</div>
+          <div class="metric-desc">Si mantenés el volumen actual</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONSEJO -->
+    ${data.consejo_principal ? `
+    <div class="advice-card">
+      <div class="advice-title">💡 Consejo para tu negocio</div>
+      <div class="advice-text">${data.consejo_principal}</div>
+    </div>` : ''}
+
+    <!-- REFLEXIÓN -->
+    <div class="philosophy-card">
+      <div class="philosophy-title">Precio, costo y valor percibido</div>
+      <div class="philosophy-text">
+        El precio mínimo es tu piso — por debajo de ese número cada venta te cuesta dinero.<br><br>
+        <em>Los costos te dicen hasta dónde podés bajar. El mercado te dice hasta dónde podés subir. Tu trabajo es encontrar ese punto.</em>
+      </div>
+    </div>
+
+    <!-- CONTINUAR -->
+    <div class="results-actions">
+      <button class="btn-primary" onclick="continueChat()">Continuar conversación →</button>
+    </div>
+  `;
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function buildCostRows(data, currency) {
+  let rows = '';
+  if (data.desglose && data.desglose.length > 0) {
+    data.desglose.forEach(r => {
+      rows += `<div class="cost-row"><span class="cost-label">${r.concepto}</span><span class="cost-value">${currency}${fmt(r.valor)}</span></div>`;
+    });
+  } else {
+    rows += `<div class="cost-row"><span class="cost-label">Costos directos de producción</span><span class="cost-value">${currency}${fmt(data.costo_directo)}</span></div>`;
+    rows += `<div class="cost-row"><span class="cost-label">Gastos fijos proporcionales</span><span class="cost-value">${currency}${fmt(data.costo_fijo_unit)}</span></div>`;
+    rows += `<div class="cost-row"><span class="cost-label">Costos variables por venta</span><span class="cost-value">${currency}${fmt(data.costo_variable)}</span></div>`;
+  }
+  rows += `<div class="cost-row total"><span class="cost-label">COSTO TOTAL por unidad</span><span class="cost-value">${currency}${fmt(data.costo_total)}</span></div>`;
+  return rows;
+}
+
+function fmt(n) {
+  if (n == null) return '—';
+  return Number(n).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+window.continueChat = function() {
+  showScreen('app-screen');
+  updateProgress(currentBlock);
+
+  // Build summary message from last results
+  if (window.lastResultsData) {
+    const d = window.lastResultsData;
+    const currency = d.moneda || '€';
+    const summary = `📊 **Resumen del análisis — ${d.producto}**\n\n` +
+      `• Costo total por unidad: ${currency}${fmt(d.costo_total)}\n` +
+      `• Tu precio actual: ${currency}${fmt(d.precio_actual)}\n` +
+      `• Precio recomendado: ${currency}${fmt(d.precio_recomendado)}\n` +
+      `• Ganancia mensual proyectada: ${currency}${fmt(d.ganancia_mensual)}\n\n` +
+      `¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?`;
+
+    addMessage('ai', summary);
+    conversationHistory.push({ role: 'assistant', content: summary });
+    saveConversation();
+  } else {
+    addMessage('ai', '¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?');
+    conversationHistory.push({ role: 'assistant', content: '¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?' });
+    saveConversation();
+  }
+
+  const container = document.getElementById('chat-messages');
+  container.scrollTop = container.scrollHeight;
+};
+
+window.newConversation = function() {
+  conversationHistory = [];
+  currentBlock = 1;
+  document.getElementById('chat-messages').innerHTML = '';
+  saveConversation();
+  showScreen('app-screen');
+  initChat();
+};
+</script>
+</body>
+</html>
