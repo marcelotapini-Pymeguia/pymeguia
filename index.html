@@ -1136,9 +1136,20 @@ Siempre con disclaimer de consultar asesor fiscal.
 ## CUÁNDO MOSTRAR RESULTADOS
 Cuando tengas todos los datos, terminá tu mensaje con exactamente esto:
 [RESULTADOS_LISTOS]
-{"negocio":"nombre","producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_actual_pct":0,"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes":0,"moneda":"€","desglose":[{"concepto":"nombre","valor":0}],"consejo_principal":"consejo específico basado en los datos reales del negocio","problema_detectado":"problema principal detectado"}
+{"negocio":"nombre","producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_actual_pct":0,"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes":0,"moneda":"€","tiempo_horas":0,"valor_hora":0,"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","desglose":[{"concepto":"nombre","valor":0}],"consejo_principal":"consejo específico basado en los datos reales del negocio","problema_detectado":"problema principal detectado"}
 
-IMPORTANTE: El JSON debe estar en UNA SOLA LÍNEA, sin saltos de línea dentro, sin markdown, sin backticks.
+IMPORTANTE sobre tiempo_horas y valor_hora:
+- tiempo_horas: cuántas horas tarda en producir UNA unidad (dato siempre necesario para servicios y manufactura)
+- valor_hora: cuánto vale la hora de trabajo del emprendedor. Si NO lo sabe y pidió calcularlo al final, usá 0. Si sí lo definió, ponelo.
+- Si valor_hora es 0, DEBÉS calcular los 3 valores de mercado según el rubro y país específicos del emprendedor:
+  - valor_hora_mercado_bajo: hora mínima del mercado para ese rubro/país
+  - valor_hora_mercado_medio: hora promedio del mercado para ese rubro/país
+  - valor_hora_mercado_alto: hora premium del mercado para ese rubro/país
+  - rubro_referencia: texto corto describiendo el rubro (ej: "artesanos del mimbre en España", "consultores IT en Argentina")
+- Estos valores DEBEN ser realistas según el rubro y país del emprendedor — NO uses valores genéricos como 10/12/15 para todos los casos.
+- Ejemplos de referencia: artesanos del mimbre en España (€8-€12-€18), consultores IT en Argentina ($15-$25-$40 USD), diseñadores gráficos en México ($150-$300-$500 MXN), panaderos artesanales en España (€10-€14-€20).
+
+El JSON debe estar en UNA SOLA LÍNEA, sin saltos de línea dentro, sin markdown, sin backticks.
 
 ## REGLAS CRÍTICAS
 - NUNCA dos preguntas en el mismo mensaje
@@ -1421,19 +1432,6 @@ window.autoResize = function(el) {
 function showResults(data) {
   showScreen('results-screen');
   const currency = data.moneda || '€';
-  const margen = data.margen_actual_pct || 0;
-  const gananciaPorUnidad = data.precio_actual - data.costo_total;
-
-  let statusClass = 'success', statusIcon = '✅', statusTitle = 'Buen margen', statusSub = `Ganás ${currency}${fmt(gananciaPorUnidad)} por unidad — margen del ${margen.toFixed(1)}%`;
-  if (margen < 0) {
-    statusClass = 'danger'; statusIcon = '🚨';
-    statusTitle = 'Estás perdiendo dinero';
-    statusSub = `Perdés ${currency}${fmt(Math.abs(gananciaPorUnidad))} por cada unidad que vendés`;
-  } else if (margen < 20) {
-    statusClass = 'warn'; statusIcon = '⚠️';
-    statusTitle = 'Margen muy ajustado';
-    statusSub = `Ganás ${currency}${fmt(gananciaPorUnidad)} por unidad — cualquier imprevisto te come la ganancia`;
-  }
 
   // Build clean desglose — only costs, no derived metrics
   const desgloseItems = data.desglose && data.desglose.length > 0
@@ -1444,14 +1442,53 @@ function showResults(data) {
         { concepto: 'Costos variables por venta', valor: data.costo_variable },
       ].filter(r => r.valor > 0);
 
-  // Recalculate costo_total from desglose to ensure consistency
+  // Recalculate costo_total from desglose to ensure consistency across all metrics
   const costoTotalCalculado = desgloseItems.reduce((sum, r) => sum + r.valor, 0);
   const costoTotal = costoTotalCalculado > 0 ? costoTotalCalculado : data.costo_total;
+
+  // ALL metrics derived from the SAME costoTotal — no inconsistencies
   const gananciaPorUnidadReal = data.precio_actual - costoTotal;
+  const margenReal = data.precio_actual > 0 ? (gananciaPorUnidadReal / data.precio_actual) * 100 : 0;
   const gananciaRecomendada = data.precio_recomendado - costoTotal;
   const gananciaMensualReal = gananciaPorUnidadReal * data.unidades_mes;
   const gananciaMensualRec = gananciaRecomendada * data.unidades_mes;
   const gananciaAnualRec = gananciaMensualRec * 12;
+
+  // Status banner uses the same recalculated values
+  let statusClass = 'success', statusIcon = '✅', statusTitle = 'Buen margen', statusSub = `Ganás ${currency}${fmt(gananciaPorUnidadReal)} por unidad — margen del ${margenReal.toFixed(1)}%`;
+  if (margenReal < 0) {
+    statusClass = 'danger'; statusIcon = '🚨';
+    statusTitle = 'Estás perdiendo dinero';
+    statusSub = `Perdés ${currency}${fmt(Math.abs(gananciaPorUnidadReal))} por cada unidad que vendés`;
+  } else if (margenReal < 20) {
+    statusClass = 'warn'; statusIcon = '⚠️';
+    statusTitle = 'Margen muy ajustado';
+    statusSub = `Ganás ${currency}${fmt(gananciaPorUnidadReal)} por unidad — cualquier imprevisto te come la ganancia`;
+  }
+
+  // Detect if user didn't set hourly value — flag for showing hourly value insight
+  const tieneTiempoTrabajo = data.tiempo_horas && data.tiempo_horas > 0;
+  const valorHoraDefinido = data.valor_hora && data.valor_hora > 0;
+  const mostrarConsejoHoras = tieneTiempoTrabajo && !valorHoraDefinido;
+  // Hourly value calculations using market-specific rates
+  let horaCalculada = null, precioBajo = null, precioMedio = null, precioAlto = null;
+  let horaMercadoBajo = data.valor_hora_mercado_bajo || 0;
+  let horaMercadoMedio = data.valor_hora_mercado_medio || 0;
+  let horaMercadoAlto = data.valor_hora_mercado_alto || 0;
+  const rubroRef = data.rubro_referencia || 'tu rubro';
+  if (tieneTiempoTrabajo) {
+    horaCalculada = gananciaPorUnidadReal / data.tiempo_horas;
+    // Fallback if AI didn't provide market values
+    if (horaMercadoBajo === 0) horaMercadoBajo = 10;
+    if (horaMercadoMedio === 0) horaMercadoMedio = 14;
+    if (horaMercadoAlto === 0) horaMercadoAlto = 18;
+    const horasPorUnidad = data.tiempo_horas;
+    precioBajo = costoTotal + (horasPorUnidad * horaMercadoBajo);
+    precioMedio = costoTotal + (horasPorUnidad * horaMercadoMedio);
+    precioAlto = costoTotal + (horasPorUnidad * horaMercadoAlto);
+  }
+
+
 
   const body = document.getElementById('results-body');
   body.innerHTML = `
@@ -1496,9 +1533,9 @@ function showResults(data) {
           <div class="metric-value">${currency}${fmt(data.precio_actual)}</div>
           <div class="metric-desc">Lo que cobrás hoy</div>
         </div>
-        <div class="metric-card ${margen < 0 ? 'danger-border' : margen < 20 ? 'warn-border' : 'success-border'}">
+        <div class="metric-card ${margenReal < 0 ? 'danger-border' : margenReal < 20 ? 'warn-border' : 'success-border'}">
           <div class="metric-label">Ganancia por unidad</div>
-          <div class="metric-value" style="color: ${margen < 0 ? 'var(--danger)' : margen < 20 ? 'var(--warn)' : 'var(--success)'}">
+          <div class="metric-value" style="color: ${margenReal < 0 ? 'var(--danger)' : margenReal < 20 ? 'var(--warn)' : 'var(--success)'}">
             ${currency}${fmt(gananciaPorUnidadReal)}
           </div>
           <div class="metric-desc">Precio actual − costo total</div>
@@ -1558,6 +1595,24 @@ function showResults(data) {
     <div class="advice-card">
       <div class="advice-title">💡 Consejo para tu negocio</div>
       <div class="advice-text">${data.consejo_principal}</div>
+    </div>` : ''}
+
+    <!-- VALOR HORA — solo si no definió valor hora -->
+    ${mostrarConsejoHoras ? `
+    <div class="advice-card" style="border-left-color: var(--warn);">
+      <div class="advice-title" style="color: var(--warn);">⏱️ Tu hora de trabajo</div>
+      <div class="advice-text">
+        Notamos que no definiste un valor para tu hora de trabajo — es algo que la mayoría de los emprendedores no calcula. Pero es uno de los datos que más cambia tu margen real.<br><br>
+        <strong>Con tu precio actual de ${currency}${fmt(data.precio_actual)} y ${data.tiempo_horas} ${data.tiempo_horas === 1 ? 'hora' : 'horas'} por unidad, tu hora te está dejando ${currency}${fmt(horaCalculada)}.</strong>
+        ${horaCalculada < 0 ? ' Eso significa que estás pagando por trabajar.' : horaCalculada < horaMercadoBajo ? ' Está por debajo del mínimo de mercado.' : ''}
+        <br><br>
+        Para que tu hora valga lo que cobran ${rubroRef}, estos son los precios de referencia:
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px; padding: 12px; background: var(--surface2); border-radius: var(--radius-sm);">
+          <div style="display: flex; justify-content: space-between;"><span>Tarifa baja del mercado — hora a ${currency}${fmt(horaMercadoBajo)}</span><strong>Precio: ${currency}${fmt(precioBajo)}</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span>Tarifa media del mercado — hora a ${currency}${fmt(horaMercadoMedio)}</span><strong>Precio: ${currency}${fmt(precioMedio)}</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span>Tarifa premium — hora a ${currency}${fmt(horaMercadoAlto)}</span><strong>Precio: ${currency}${fmt(precioAlto)}</strong></div>
+        </div>
+      </div>
     </div>` : ''}
 
     <!-- REFLEXIÓN -->
