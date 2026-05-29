@@ -886,6 +886,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: 'select_account' });
 
 // ── State ──
 let currentUser = null;
@@ -928,6 +929,11 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function loadUserData() {
+  // Always clear chat UI first
+  document.getElementById('chat-messages').innerHTML = '';
+  conversationHistory = [];
+  currentBlock = 1;
+
   try {
     const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
     if (userDoc.exists()) {
@@ -935,7 +941,7 @@ async function loadUserData() {
       apiKey = data.apiKey || '';
 
       // Restore conversation if exists
-      if (data.conversationHistory && data.conversationHistory.length > 0 && data.currentBlock && data.currentBlock < 5) {
+      if (apiKey && data.conversationHistory && data.conversationHistory.length > 0 && data.currentBlock && data.currentBlock < 5) {
         conversationHistory = data.conversationHistory;
         currentBlock = data.currentBlock || 1;
         showScreen('app-screen');
@@ -948,7 +954,6 @@ async function loadUserData() {
 
     // New user or no active conversation
     if (!apiKey) {
-      // Need API key
       showScreen('auth-screen');
     } else {
       showScreen('app-screen');
@@ -956,6 +961,7 @@ async function loadUserData() {
       initChat();
     }
   } catch(e) {
+    console.error('loadUserData error:', e);
     showScreen('auth-screen');
   }
 }
@@ -1001,12 +1007,19 @@ window.loginWithGoogle = async function() {
 
 // ── Menu ──
 window.showMenu = function() {
-  const options = ['Nueva conversación', 'Cerrar sesión'];
   const choice = confirm('¿Qué querés hacer?\n\nOK = Nueva conversación\nCancelar = Cerrar sesión');
   if (choice) {
     newConversation();
   } else {
-    signOut(auth).then(() => showScreen('auth-screen'));
+    // Clear everything before signing out
+    conversationHistory = [];
+    apiKey = '';
+    currentBlock = 1;
+    window.lastResultsData = null;
+    document.getElementById('chat-messages').innerHTML = '';
+    signOut(auth).then(() => {
+      showScreen('auth-screen');
+    });
   }
 };
 
