@@ -911,10 +911,18 @@ function showScreen(id) {
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
+    // Reset all state before loading new user data
+    conversationHistory = [];
+    apiKey = '';
+    currentBlock = 1;
+    document.getElementById('chat-messages').innerHTML = '';
     await loadUserData();
   } else {
     currentUser = null;
     conversationHistory = [];
+    apiKey = '';
+    currentBlock = 1;
+    document.getElementById('chat-messages').innerHTML = '';
     showScreen('auth-screen');
   }
 });
