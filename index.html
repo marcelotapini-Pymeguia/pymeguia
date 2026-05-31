@@ -894,7 +894,7 @@ let apiKey = '';
 let conversationHistory = [];
 let isLoading = false;
 let currentBlock = 1;
-let isInitialized = false;
+let loginInProgress = false;
 
 // ── Screen management ──
 function showScreen(id) {
@@ -909,78 +909,68 @@ function showScreen(id) {
   if (id === 'auth-screen') el.style.display = 'flex';
 }
 
-// ── Auth state listener ──
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    // If same user, don't re-initialize
-    if (currentUser && currentUser.uid === user.uid && isInitialized) return;
+// ── Clear all session data ──
+function clearSession() {
+  conversationHistory = [];
+  apiKey = '';
+  currentBlock = 1;
+  window.lastResultsData = null;
+  const chatEl = document.getElementById('chat-messages');
+  if (chatEl) chatEl.innerHTML = '';
+}
 
+// ── Auth state listener — handles page load and sign out only ──
+onAuthStateChanged(auth, async (user) => {
+  if (loginInProgress) return;
+  if (user) {
     currentUser = user;
-    // Reset all state before loading new user data
-    conversationHistory = [];
-    apiKey = '';
-    currentBlock = 1;
-    isInitialized = false;
-    document.getElementById('chat-messages').innerHTML = '';
-    await loadUserData();
+    clearSession();
+    await loadAndShowUserData();
   } else {
     currentUser = null;
-    conversationHistory = [];
-    apiKey = '';
-    currentBlock = 1;
-    isInitialized = false;
-    document.getElementById('chat-messages').innerHTML = '';
+    clearSession();
     showScreen('auth-screen');
   }
 });
 
-async function loadUserData() {
-  // Always clear chat UI first
-  document.getElementById('chat-messages').innerHTML = '';
-  conversationHistory = [];
-  currentBlock = 1;
-
+// ── Load user data from Firestore ──
+async function loadAndShowUserData() {
   try {
-    const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    const userDoc = await getDoc(userDocRef);
     if (userDoc.exists()) {
       const data = userDoc.data();
       apiKey = data.apiKey || '';
-
-      // Restore conversation if exists — regardless of which block they're on
-      if (apiKey && data.conversationHistory && data.conversationHistory.length > 0) {
+      if (!apiKey) { showScreen('auth-screen'); return; }
+      if (data.conversationHistory && data.conversationHistory.length > 0) {
         conversationHistory = data.conversationHistory;
         currentBlock = data.currentBlock || 1;
         showScreen('app-screen');
         setUserAvatar();
-        restoreConversation(data.conversationHistory);
+        restoreConversation(conversationHistory);
         updateProgress(currentBlock);
-        isInitialized = true;
-        return;
+      } else {
+        showScreen('app-screen');
+        setUserAvatar();
+        initChat();
       }
-    }
-
-    // New user or no active conversation
-    if (!apiKey) {
-      showScreen('auth-screen');
     } else {
-      showScreen('app-screen');
-      setUserAvatar();
-      initChat();
-      isInitialized = true;
+      showScreen('auth-screen');
     }
   } catch(e) {
-    console.error('loadUserData error:', e);
+    console.error('loadAndShowUserData error:', e);
     showScreen('auth-screen');
   }
 }
 
 function setUserAvatar() {
   const initial = document.getElementById('user-initial');
+  if (!initial || !currentUser) return;
   const name = currentUser.displayName || currentUser.email || '?';
   initial.textContent = name.charAt(0).toUpperCase();
 }
 
-// ── Login ──
+// ── Login with Google ──
 window.loginWithGoogle = async function() {
   const key = document.getElementById('api-key-input').value.trim();
   if (!key || !key.startsWith('sk-ant-')) {
@@ -988,31 +978,55 @@ window.loginWithGoogle = async function() {
     return;
   }
 
+  loginInProgress = true;
+
   try {
     const result = await signInWithPopup(auth, provider);
     currentUser = result.user;
+    clearSession();
     apiKey = key;
 
-    // Save user data
-    await setDoc(doc(db, 'users', currentUser.uid), {
-      email: currentUser.email,
-      name: currentUser.displayName,
-      apiKey: key,
-      createdAt: new Date().toISOString(),
-      conversationHistory: [],
-      currentBlock: 1
-    }, { merge: true });
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    const existingDoc = await getDoc(userDocRef);
 
-    isInitialized = true;
-    document.getElementById('chat-messages').innerHTML = '';
-    showScreen('app-screen');
-    setUserAvatar();
-    initChat();
+    if (existingDoc.exists()) {
+      // Existing user — only update API key, preserve their conversation
+      await updateDoc(userDocRef, { apiKey: key });
+      const data = existingDoc.data();
+      if (data.conversationHistory && data.conversationHistory.length > 0) {
+        conversationHistory = data.conversationHistory;
+        currentBlock = data.currentBlock || 1;
+        showScreen('app-screen');
+        setUserAvatar();
+        restoreConversation(conversationHistory);
+        updateProgress(currentBlock);
+      } else {
+        showScreen('app-screen');
+        setUserAvatar();
+        initChat();
+      }
+    } else {
+      // New user — create fresh document
+      await setDoc(userDocRef, {
+        email: currentUser.email,
+        name: currentUser.displayName,
+        apiKey: key,
+        createdAt: new Date().toISOString(),
+        conversationHistory: [],
+        currentBlock: 1
+      });
+      showScreen('app-screen');
+      setUserAvatar();
+      initChat();
+    }
   } catch(e) {
     if (e.code !== 'auth/popup-closed-by-user') {
       alert('Error al iniciar sesión: ' + e.message);
     }
+  } finally {
+    loginInProgress = false;
   }
+};
 };
 
 // ── Menu ──
@@ -1021,13 +1035,7 @@ window.showMenu = function() {
   if (choice) {
     window.newConversation();
   } else {
-    // Clear everything before signing out
-    conversationHistory = [];
-    apiKey = '';
-    currentBlock = 1;
-    isInitialized = false;
-    window.lastResultsData = null;
-    document.getElementById('chat-messages').innerHTML = '';
+    clearSession();
     signOut(auth).then(() => {
       showScreen('auth-screen');
     });
@@ -1035,10 +1043,9 @@ window.showMenu = function() {
 };
 
 window.newConversation = function() {
-  conversationHistory = [];
-  currentBlock = 1;
-  isInitialized = true;
-  document.getElementById('chat-messages').innerHTML = '';
+  const savedKey = apiKey;
+  clearSession();
+  apiKey = savedKey;
   saveConversation();
   showScreen('app-screen');
   initChat();
@@ -1111,6 +1118,15 @@ El emprendedor puede acordarse de algo en cualquier momento de la conversación 
 - Confirmás brevemente: "Perfecto, lo sumo al análisis."
 - Seguís adelante
 Nunca decís que "ya pasó ese bloque" o que "no podés agregar eso ahora". Siempre podés.
+
+## VALOR HORA — FLEXIBILIDAD OBLIGATORIA
+Cuando preguntás el valor de la hora de trabajo y el emprendedor dice que no lo sabe, o que prefiere calcularlo al final viendo los resultados:
+- ACEPTALO SIN INSISTIR. Decí algo como "Perfecto, lo calculamos al final con los resultados."
+- Continuá con las siguientes preguntas sin bloquear el flujo
+- NO obligues al emprendedor a definir un valor hora para poder continuar
+- En el JSON final, dejá valor_hora en 0 y completá los valores de mercado
+- La app mostrará automáticamente la sección de valor hora en los resultados
+Esto es OBLIGATORIO — nunca bloquees el análisis por este dato.
 
 ## PRECIO RECOMENDADO
 Calculá el precio recomendado usando un margen del 30% sobre el costo total — ni el mejor escenario ni el peor. Es un margen conservador y sostenible para una pyme.
