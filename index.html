@@ -894,6 +894,7 @@ let apiKey = '';
 let conversationHistory = [];
 let isLoading = false;
 let currentBlock = 1;
+let isInitialized = false;
 
 // ── Screen management ──
 function showScreen(id) {
@@ -911,11 +912,15 @@ function showScreen(id) {
 // ── Auth state listener ──
 onAuthStateChanged(auth, async (user) => {
   if (user) {
+    // If same user, don't re-initialize
+    if (currentUser && currentUser.uid === user.uid && isInitialized) return;
+
     currentUser = user;
     // Reset all state before loading new user data
     conversationHistory = [];
     apiKey = '';
     currentBlock = 1;
+    isInitialized = false;
     document.getElementById('chat-messages').innerHTML = '';
     await loadUserData();
   } else {
@@ -923,6 +928,7 @@ onAuthStateChanged(auth, async (user) => {
     conversationHistory = [];
     apiKey = '';
     currentBlock = 1;
+    isInitialized = false;
     document.getElementById('chat-messages').innerHTML = '';
     showScreen('auth-screen');
   }
@@ -940,14 +946,15 @@ async function loadUserData() {
       const data = userDoc.data();
       apiKey = data.apiKey || '';
 
-      // Restore conversation if exists
-      if (apiKey && data.conversationHistory && data.conversationHistory.length > 0 && data.currentBlock && data.currentBlock < 5) {
+      // Restore conversation if exists — regardless of which block they're on
+      if (apiKey && data.conversationHistory && data.conversationHistory.length > 0) {
         conversationHistory = data.conversationHistory;
         currentBlock = data.currentBlock || 1;
         showScreen('app-screen');
         setUserAvatar();
         restoreConversation(data.conversationHistory);
         updateProgress(currentBlock);
+        isInitialized = true;
         return;
       }
     }
@@ -959,6 +966,7 @@ async function loadUserData() {
       showScreen('app-screen');
       setUserAvatar();
       initChat();
+      isInitialized = true;
     }
   } catch(e) {
     console.error('loadUserData error:', e);
@@ -995,6 +1003,8 @@ window.loginWithGoogle = async function() {
       currentBlock: 1
     }, { merge: true });
 
+    isInitialized = true;
+    document.getElementById('chat-messages').innerHTML = '';
     showScreen('app-screen');
     setUserAvatar();
     initChat();
@@ -1009,12 +1019,13 @@ window.loginWithGoogle = async function() {
 window.showMenu = function() {
   const choice = confirm('¿Qué querés hacer?\n\nOK = Nueva conversación\nCancelar = Cerrar sesión');
   if (choice) {
-    newConversation();
+    window.newConversation();
   } else {
     // Clear everything before signing out
     conversationHistory = [];
     apiKey = '';
     currentBlock = 1;
+    isInitialized = false;
     window.lastResultsData = null;
     document.getElementById('chat-messages').innerHTML = '';
     signOut(auth).then(() => {
@@ -1023,17 +1034,18 @@ window.showMenu = function() {
   }
 };
 
-function newConversation() {
+window.newConversation = function() {
   conversationHistory = [];
   currentBlock = 1;
+  isInitialized = true;
   document.getElementById('chat-messages').innerHTML = '';
   saveConversation();
   showScreen('app-screen');
   initChat();
-}
+};
 
 window.analyzeAnother = function() {
-  newConversation();
+  window.newConversation();
 };
 
 // ── Save conversation to Firestore ──
@@ -1702,14 +1714,6 @@ window.continueChat = function() {
   container.scrollTop = container.scrollHeight;
 };
 
-window.newConversation = function() {
-  conversationHistory = [];
-  currentBlock = 1;
-  document.getElementById('chat-messages').innerHTML = '';
-  saveConversation();
-  showScreen('app-screen');
-  initChat();
-};
 </script>
 </body>
 </html>
