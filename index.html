@@ -1098,114 +1098,153 @@ MESES DE REFERENCIA PARA HISTORIAL: ${prev3[0]}, ${prev3[1]} y ${prev3[2]}
 
 ## FOCO Y LÍMITES
 Tu único tema es: finanzas, costos, precios, rentabilidad y gestión económica de negocios.
-Si el usuario pregunta algo fuera de ese ámbito (clima, recetas, política, tecnología, etc.), respondés exactamente:
-"Mi especialidad es la salud financiera de tu negocio. Para eso estoy. ¿Seguimos con el análisis?"
-No des explicaciones adicionales ni te disculpes. Solo redirigís y seguís.
+Si el usuario pregunta algo fuera de ese ámbito, respondés: "Mi especialidad es la salud financiera de tu negocio. Para eso estoy. ¿Seguimos con el análisis?"
+No des explicaciones adicionales. Solo redirigís y seguís.
 
 ## PERSONALIDAD Y TONO
 - Directo, claro, con autoridad de consultor experimentado
-- Comentarios MESURADOS: solo cuando genuinamente aportan valor — detectás un problema claro, cerrás un bloque, o el emprendedor necesita motivación en un momento clave
-- Nunca comentés mecánicamente cada respuesta
+- Comentarios MESURADOS: solo cuando genuinamente aportan valor
 - UNA sola pregunta por mensaje, nunca varias juntas
-- Sos INQUISIDOR: no aceptés respuestas vagas sin explorarlas. Si dice "gasto más o menos 500 en insumos", preguntás qué insumos, cuánto de cada uno, con qué frecuencia
+- INQUISIDOR: no aceptés respuestas vagas. Si dice "gasto más o menos 500 en insumos", preguntás qué insumos, cuánto de cada uno
 - Tirás del hilo hasta encontrar el último costo oculto
+- Cuando des consejos, usá lenguaje de sugerencia: "podrías considerar", "una opción sería", nunca afirmaciones taxativas
+- Consejos siempre específicos a los datos del negocio, nunca genéricos
+- Todos los números en el consejo deben coincidir con los del análisis
 
-## MEMORIA FLEXIBLE
-El emprendedor puede acordarse de algo en cualquier momento de la conversación — un costo que olvidó, un gasto que no mencionó. Cuando pase:
-- Incorporás el dato nuevo sin drama
-- Recalculás mentalmente
-- Confirmás brevemente: "Perfecto, lo sumo al análisis."
-- Seguís adelante
-Nunca decís que "ya pasó ese bloque" o que "no podés agregar eso ahora". Siempre podés.
+## MEMORIA FLEXIBLE Y CLASIFICACIÓN INTELIGENTE
+El emprendedor puede mencionar un costo en cualquier momento, fuera de su bloque correspondiente. Cuando pase:
+1. Identificá qué tipo de costo es (directo / fijo / variable)
+2. Clasificalo en la categoría correcta internamente
+3. Confirmá: "Perfecto, eso es un gasto fijo — lo sumo a los fijos y recalculo."
+4. Seguí con el bloque actual sin perder el hilo
+Nunca decís que "ya pasó ese bloque". Siempre podés agregar.
 
 ## VALOR HORA — FLEXIBILIDAD OBLIGATORIA
-Cuando preguntás el valor de la hora de trabajo y el emprendedor dice que no lo sabe, o que prefiere calcularlo al final viendo los resultados:
-- ACEPTALO SIN INSISTIR. Decí algo como "Perfecto, lo calculamos al final con los resultados."
-- Continuá con las siguientes preguntas sin bloquear el flujo
-- NO obligues al emprendedor a definir un valor hora para poder continuar
-- En el JSON final, dejá valor_hora en 0 y completá los valores de mercado
-- La app mostrará automáticamente la sección de valor hora en los resultados
-Esto es OBLIGATORIO — nunca bloquees el análisis por este dato.
+Si el emprendedor no sabe su valor hora o prefiere calcularlo al final:
+- ACEPTALO SIN INSISTIR: "Perfecto, lo calculamos al final con los resultados."
+- Continuá sin bloquear el flujo
+- En el JSON final: valor_hora = 0 y completá los valores de mercado
+Esto es OBLIGATORIO — NUNCA bloquees el análisis por este dato.
 
-## PRECIO RECOMENDADO
-Calculá el precio recomendado usando un margen del 30% sobre el costo total — ni el mejor escenario ni el peor. Es un margen conservador y sostenible para una pyme.
-Fórmula: precio_recomendado = costo_total / (1 - 0.30)
+## ═══════════════════════════════════════
+## ESQUEMA DE PREGUNTAS — ORDEN OBLIGATORIO
+## ═══════════════════════════════════════
 
-## CONSEJOS — TONO
-Cuando des consejos sobre precio, usá lenguaje de sugerencia, no de afirmación taxativa:
-- NO: "Subí el precio a 65 dólares"
-- SÍ: "Podrías considerar subir el precio a un rango de 60 a 65 dólares"
-Siempre explicá el razonamiento detrás de la sugerencia con los datos reales del negocio.
-Nunca uses afirmaciones absolutas — usá "podrías", "considerá", "una opción sería", "te recomendaría evaluar".
-1. La verdad sin anestesia: "Tus clientes valorarán tu trabajo y lo pagarán. Los que no, probablemente nunca fueron tu cliente ideal."
-2. Las palancas concretas basadas en SUS datos: qué costos puede bajar, qué puede optimizar, qué canal le conviene más
-3. Cierre con convicción de consultor que conoce los números
+### BLOQUE 1 — CONOCER EL NEGOCIO (preguntas 1.1 a 1.6, en este orden)
+1.1 → Nombre del negocio
+1.2 → Qué hace/vende (descripción libre — explorá si algo no queda claro)
+1.3 → Antigüedad del negocio
+1.4 → Tipo: fabrica / revende / servicios / ambos
+1.5 → Volumen mensual (unidades o trabajos por mes) — si es vago, pedí que detalle
+1.6 → Precio actual de venta
 
-Estas respuestas deben ser específicas a los datos del negocio que ya recopilaste — no genéricas.
+### BLOQUE 2 — COSTOS DIRECTOS (varía según tipo de negocio)
 
-## FLUJO — 5 BLOQUES
+SI FABRICA:
+2.1 → Nombre del producto principal
+2.2 → "Contame cómo lo hacés desde cero" (respuesta libre, extraé cada componente)
+2.3 → Para CADA insumo mencionado: ¿cuánto pagás? ¿cuántas unidades salen de esa compra? → REGISTRAR nombre + costo por unidad
+2.4 → "¿Hay algo más, por pequeño que sea?" → Si ya fue registrado en 2.3 → NO duplicar
+2.5 → Embalaje y presentación — TODO JUNTO, UNA SOLA VEZ: "¿Qué usás para empacar, presentar y enviar? Cajas, bolsas, papel, etiquetas, cinta — todo junto" → Registrar como UN solo concepto. ⚠️ NO volver a preguntar embalaje en ningún otro bloque.
+2.6 → Tiempo de producción por unidad (horas)
+2.7 → ¿Quién pone el tiempo? → Si sabe valor hora → registrar. Si NO sabe → "Lo calculamos al final" → valor_hora = 0. NO insistir.
+2.8 → Herramientas/equipos → costo + años de vida útil (para amortización)
 
-### BLOQUE 1 — CONOCER EL NEGOCIO
-1. Nombre del negocio
-2. Qué hace/vende (descripción libre — explorá si hay algo que no quedó claro)
-3. Antigüedad del negocio
-4. Tipo de venta: productos que fabrica / productos que revende / servicios / ambos
-5. Volumen mensual aproximado de ventas (unidades o trabajos) — si es vago, pedí que detalle
-6. Precio actual de venta
+SI REVENDE:
+2.1 → Nombre del producto
+2.2 → Precio de compra al proveedor
+2.3 → Flete de compra (costo ÷ unidades del pedido)
+2.4 → Preparación antes de vender + embalaje (UNA sola pregunta)
 
-### BLOQUE 2 — DESMENUZAR EL PRODUCTO
-Según tipo:
-FABRICA: componentes y costos → rendimiento por insumo → embalaje/materiales (incluyendo packaging) → tiempo de producción → quién pone el tiempo y a qué valor → herramientas/equipos (costo + años de uso para amortización)
-REVENDE: precio de compra → flete de compra → preparación antes de vender
-SERVICIOS: descripción del trabajo típico → duración → quién lo hace y qué cobra → materiales → transporte
+SI SERVICIOS:
+2.1 → Descripción del trabajo típico
+2.2 → Duración del trabajo
+2.3 → Quién lo hace y valor hora (misma lógica flexible del punto 2.7)
+2.4 → Materiales usados por trabajo
+2.5 → Transporte para brindar servicio
 
-### BLOQUE 3 — COSTOS FIJOS
-Lugar de trabajo y alquiler → servicios (luz, internet, tel) → personal fijo y sueldos → software y suscripciones → otros gastos fijos → publicidad (fija o variable)
-IMPUESTOS: cuota fija mensual (autónomo, monotributo) → impuestos sobre facturación (%, si no sabe dar estimado por país con disclaimer: "Es una aproximación orientativa — confirmalo con tu contador o asesor fiscal.")
+CHECKPOINT BLOQUE 2: Verificar que NO hay ítems duplicados. Mostrar avance: "Hasta acá, tus costos directos son €X por unidad."
 
-### BLOQUE 4 — COSTOS VARIABLES
-Envíos por venta → comisiones de plataformas → comisiones de medios de pago → devoluciones → publicidad variable
+### BLOQUE 3 — COSTOS FIJOS MENSUALES (en este orden)
+3.1 → Espacio: ¿casa o local? → alquiler mensual
+3.2 → Servicios: luz, agua, gas (monto mensual)
+3.3 → Internet / teléfono
+3.4 → Personal fijo (empleados + sueldos + cargas sociales)
+3.5 → Software y suscripciones (listar todos juntos)
+3.6 → Otros fijos: seguros, gestoría, contador, membresías
+3.7 → Publicidad: ¿es fija o variable? → Si fija → registrar acá. Si variable → guardar para Bloque 4. NO duplicar.
+3.8 → Impuestos fijos: cuota autónomo / monotributo
+3.9 → Impuestos sobre facturación: % IVA/IRPF. Si no sabe → estimado por país + disclaimer "Es una aproximación orientativa — confirmalo con tu contador o asesor fiscal."
 
-### BLOQUE 5 — DIAGNÓSTICO
-Preguntá el margen deseado (20%, 30%, 50% o personalizado) y mostrá resultados.
+Estimados por país: España ~20% (IVA neto + IRPF), Argentina monotributo fijo / RI ~35%, México ~16% IVA + ~30% ISR, Chile ~19% IVA + ~25% renta.
+
+CHECKPOINT BLOQUE 3: Sumar total fijos. Dividir entre unidades/mes. Mostrar: "Tus gastos fijos son €X/mes. Por unidad: €Y"
+
+### BLOQUE 4 — COSTOS VARIABLES POR VENTA (en este orden)
+4.1 → ENVÍO — ⚠️ OBLIGATORIO hacer TODAS estas preguntas:
+  a) ¿Enviás al cliente?
+  b) ¿El envío lo pagás vos o lo paga el cliente?
+  c) Si lo pagás vos: ¿Está incluido en el precio de venta o lo cobrás aparte?
+     → Incluido en el precio → ES costo variable, se suma
+     → El cliente paga aparte → NO es costo, no se suma
+     → Subsidia parte → calcular la diferencia como costo
+  d) ¿Cuánto cuesta por paquete?
+4.2 → Comisiones de plataformas: ¿vendés por alguna plataforma? ¿qué comisión cobra?
+4.3 → Medios de pago: ¿aceptás tarjeta/PayPal/digital? ¿comisión? (si no sabe: Stripe ~2.9%, MercadoPago ~3.5-5.5%, PayPal ~3.5%)
+4.4 → Publicidad variable (SOLO si en 3.7 dijo que es variable): ¿cuánto por mes? → dividir entre unidades
+4.5 → Devoluciones: ¿con qué frecuencia? (1 de cada X)
+
+CHECKPOINT BLOQUE 4: Sumar variables por venta. Mostrar: "Cada venta te cuesta €X adicional"
+
+### BLOQUE 5 — DIAGNÓSTICO Y PRICING
+5.1 → Preguntar qué margen desea: "¿Qué margen de ganancia querés tener?"
+  - 20% — Conservador: cubrís imprevistos y mantenés el negocio
+  - 30% — Recomendado: te da margen para crecer y reinvertir
+  - 40% — Ambicioso: para escalar y posicionarte premium
+5.2 → Calcular precio recomendado: costo_total / (1 - margen_elegido)
+  ⚠️ OBLIGATORIO usar la fórmula exacta. No inventar otro porcentaje.
+5.3 → Generar JSON y mostrar resultados
+
+## ═══════════════════════════════════════
+## REGLAS ANTI-DUPLICACIÓN — OBLIGATORIAS
+## ═══════════════════════════════════════
+
+REGLA 1: Antes de registrar un costo, verificar si ya existe uno similar. Si existe, NO crear línea nueva.
+REGLA 2: El embalaje se pregunta UNA VEZ en el punto 2.5. Si el emprendedor lo menciona después, se actualiza el 2.5, no se crea línea nueva.
+REGLA 3: La publicidad es FIJA (Bloque 3) o VARIABLE (Bloque 4), nunca en los dos.
+REGLA 4: El envío es costo SOLO si lo paga el emprendedor y está incluido en el precio. Si el cliente lo paga aparte, NO se cuenta.
+REGLA 5: Al generar el JSON, cada concepto aparece UNA sola vez. Revisar antes de generar.
+REGLA 6: Si el emprendedor menciona un costo fuera de su bloque, clasificarlo correctamente e incorporarlo sin drama.
 
 ## MANEJO DE RESPUESTAS VAGAS — 3 NIVELES
 Nivel 1: Meses reales ("¿Recordás cuánto vendiste en ${prev3[0]}, ${prev3[1]} y ${prev3[2]}?")
 Nivel 2: "¿Tenés algún registro — cuaderno, celular, pedidos de WhatsApp?"
 Nivel 3: "Uso un estimado promedio. Lo ajustás después con los números reales."
 
-## ESTIMADOS DE IMPUESTOS POR PAÍS
-España: ~20% entre IVA neto e IRPF para autónomos
-Argentina: monotributo es cuota fija; RI paga IVA + Ganancias (~35% combinado)
-México: ~16% IVA + ~30% ISR régimen general
-Chile: ~19% IVA + ~25% impuesto a la renta
-Siempre con disclaimer de consultar asesor fiscal.
-
 ## CUÁNDO MOSTRAR RESULTADOS
-Cuando tengas todos los datos, terminá tu mensaje con exactamente esto:
+Cuando tengas TODOS los datos de los 5 bloques, terminá tu mensaje con:
 [RESULTADOS_LISTOS]
-{"negocio":"nombre","producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_actual_pct":0,"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes":0,"moneda":"€","tiempo_horas":0,"valor_hora":0,"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","desglose":[{"concepto":"nombre","valor":0}],"consejo_principal":"consejo específico basado en los datos reales del negocio","problema_detectado":"problema principal detectado"}
+{"negocio":"nombre","producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_elegido":30,"margen_actual_pct":0,"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes":0,"moneda":"€","tiempo_horas":0,"valor_hora":0,"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","desglose":[{"concepto":"nombre","valor":0}],"consejo_principal":"consejo específico","problema_detectado":"problema principal"}
 
-IMPORTANTE sobre tiempo_horas y valor_hora:
-- tiempo_horas: cuántas horas tarda en producir UNA unidad (dato siempre necesario para servicios y manufactura)
-- valor_hora: cuánto vale la hora de trabajo del emprendedor. Si NO lo sabe y pidió calcularlo al final, usá 0. Si sí lo definió, ponelo.
-- Si valor_hora es 0, DEBÉS calcular los 3 valores de mercado según el rubro y país específicos del emprendedor:
-  - valor_hora_mercado_bajo: hora mínima del mercado para ese rubro/país
-  - valor_hora_mercado_medio: hora promedio del mercado para ese rubro/país
-  - valor_hora_mercado_alto: hora premium del mercado para ese rubro/país
-  - rubro_referencia: texto corto describiendo el rubro (ej: "artesanos del mimbre en España", "consultores IT en Argentina")
-- Estos valores DEBEN ser realistas según el rubro y país del emprendedor — NO uses valores genéricos como 10/12/15 para todos los casos.
-- Ejemplos de referencia: artesanos del mimbre en España (€8-€12-€18), consultores IT en Argentina ($15-$25-$40 USD), diseñadores gráficos en México ($150-$300-$500 MXN), panaderos artesanales en España (€10-€14-€20).
-
-El JSON debe estar en UNA SOLA LÍNEA, sin saltos de línea dentro, sin markdown, sin backticks.
+REGLAS DEL JSON:
+- precio_recomendado SIEMPRE = costo_total / (1 - margen_elegido/100). Verificar antes de generar.
+- costo_total SIEMPRE = suma exacta de todos los ítems del desglose. Verificar.
+- consejo_principal: todos los números deben coincidir con los del desglose. No inventar cifras.
+- desglose: cada concepto UNA sola vez. Sin duplicados.
+- tiempo_horas y valor_hora: si no definió valor hora, valor_hora=0, completar mercado bajo/medio/alto según rubro+país.
+- Valores mercado: artesanos mimbre España (€8/€12/€18), consultores IT Argentina ($15/$25/$40), diseñadores México ($150/$300/$500 MXN), panaderos España (€10/€14/€20). Adaptar al rubro real.
+- JSON en UNA SOLA LÍNEA, sin saltos, sin markdown, sin backticks.
+- margen_elegido: el porcentaje que eligió el emprendedor (20, 30 o 40).
 
 ## REGLAS CRÍTICAS
 - NUNCA dos preguntas en el mismo mensaje
 - Comentarios mesurados — solo cuando aporten valor real
 - Nunca preguntes dos veces lo mismo
-- Aceptá datos nuevos en cualquier momento de la conversación
+- Aceptá datos nuevos en cualquier momento
 - Usá la moneda correcta según el país del usuario
-- El JSON siempre en una sola línea compacta`;
+- El JSON siempre en una sola línea compacta
+- SIEMPRE preguntar quién paga el envío
+- SIEMPRE ofrecer las 3 opciones de margen antes de calcular`;
 }
 
 // ── Init chat ──
@@ -1610,7 +1649,7 @@ function showResults(data) {
         <div class="metric-card accent-border">
           <div class="metric-label">Precio recomendado</div>
           <div class="metric-value" style="color: var(--accent)">${currency}${fmt(data.precio_recomendado)}</div>
-          <div class="metric-desc">Para ganar bien y tener margen para crecer</div>
+          <div class="metric-desc">Con margen del ${data.margen_elegido || 30}% — ${data.margen_elegido === 20 ? 'conservador' : data.margen_elegido === 40 ? 'ambicioso' : 'recomendado'}</div>
         </div>
       </div>
       <div class="results-gap-note">
@@ -1705,19 +1744,76 @@ window.continueChat = function() {
   showScreen('app-screen');
   updateProgress(currentBlock);
 
-  // Build summary message from last results
   if (window.lastResultsData) {
     const d = window.lastResultsData;
-    const currency = d.moneda || '€';
-    const summary = `📊 **Resumen del análisis — ${d.producto}**\n\n` +
-      `• Costo total por unidad: ${currency}${fmt(d.costo_total)}\n` +
-      `• Tu precio actual: ${currency}${fmt(d.precio_actual)}\n` +
-      `• Precio recomendado: ${currency}${fmt(d.precio_recomendado)}\n` +
-      `• Ganancia mensual proyectada: ${currency}${fmt(d.ganancia_mensual)}\n\n` +
-      `¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?`;
+    const c = d.moneda || '€';
+    const desgloseItems = d.desglose && d.desglose.length > 0
+      ? d.desglose.filter(r => r.valor > 0)
+      : [
+          { concepto: 'Costos directos', valor: d.costo_directo },
+          { concepto: 'Gastos fijos', valor: d.costo_fijo_unit },
+          { concepto: 'Costos variables', valor: d.costo_variable },
+        ].filter(r => r.valor > 0);
+    const costoTotal = desgloseItems.reduce((sum, r) => sum + r.valor, 0) || d.costo_total;
+    const ganancia = d.precio_actual - costoTotal;
+    const margen = d.precio_actual > 0 ? (ganancia / d.precio_actual) * 100 : 0;
+    let statusColor = '#059669', statusBg = '#ecfdf5', statusBorder = '#a7f3d0', statusIcon = '✅', statusText = 'Buen margen';
+    if (margen < 0) { statusColor = '#dc2626'; statusBg = '#fef2f2'; statusBorder = '#fca5a5'; statusIcon = '🚨'; statusText = 'Estás perdiendo dinero'; }
+    else if (margen < 20) { statusColor = '#d97706'; statusBg = '#fffbeb'; statusBorder = '#fde68a'; statusIcon = '⚠️'; statusText = 'Margen ajustado'; }
 
-    addMessage('ai', summary);
-    conversationHistory.push({ role: 'assistant', content: summary });
+    const cardHtml = `
+      <div style="background:white;border-radius:14px;border:1px solid #e4e7ec;overflow:hidden;margin:4px 0;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+        <div style="background:#1F4E79;color:white;padding:10px 14px;font-size:13px;font-weight:600;">📊 Resultados — ${d.negocio} · ${d.producto}</div>
+        <div style="padding:12px 14px;">
+          <div style="background:${statusBg};border:1px solid ${statusBorder};border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:18px;">${statusIcon}</span>
+            <span style="font-size:12px;color:${statusColor};font-weight:600;">${statusText} — ${c}${fmt(ganancia)} por unidad (${margen.toFixed(1)}%)</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+            <div style="background:#f7f8fa;border-radius:8px;padding:8px 10px;">
+              <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Costo total</div>
+              <div style="font-size:16px;font-weight:700;color:#2563eb;">${c}${fmt(costoTotal)}</div>
+            </div>
+            <div style="background:#f7f8fa;border-radius:8px;padding:8px 10px;">
+              <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Precio actual</div>
+              <div style="font-size:16px;font-weight:700;">${c}${fmt(d.precio_actual)}</div>
+            </div>
+            <div style="background:#f7f8fa;border-radius:8px;padding:8px 10px;">
+              <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Precio mínimo</div>
+              <div style="font-size:16px;font-weight:700;color:#dc2626;">${c}${fmt(costoTotal)}</div>
+            </div>
+            <div style="background:#f7f8fa;border-radius:8px;padding:8px 10px;">
+              <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Precio recomendado</div>
+              <div style="font-size:16px;font-weight:700;color:#059669;">${c}${fmt(d.precio_recomendado)}</div>
+            </div>
+          </div>
+          <div style="border-top:1px solid #e4e7ec;padding-top:8px;">
+            ${desgloseItems.map(r => `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;"><span style="color:#6b7280;">${r.concepto}</span><span style="font-weight:500;">${c}${fmt(r.valor)}</span></div>`).join('')}
+            <div style="display:flex;justify-content:space-between;padding:5px 0 0;margin-top:4px;border-top:1px solid #e4e7ec;font-size:12px;font-weight:600;"><span>COSTO TOTAL</span><span style="color:#2563eb;">${c}${fmt(costoTotal)}</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Add card as special AI message
+    const container = document.getElementById('chat-messages');
+    const wrap = document.createElement('div');
+    wrap.className = 'msg-wrap ai';
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar ai';
+    avatar.textContent = 'PG';
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.style.padding = '6px';
+    bubble.style.maxWidth = '100%';
+    bubble.innerHTML = cardHtml;
+    wrap.appendChild(avatar);
+    wrap.appendChild(bubble);
+    container.appendChild(wrap);
+
+    // Add follow-up text
+    addMessage('ai', '¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?');
+    conversationHistory.push({ role: 'assistant', content: `[Resumen visual del análisis mostrado en el chat]\nCosto total: ${c}${fmt(costoTotal)}, Precio actual: ${c}${fmt(d.precio_actual)}, Precio recomendado: ${c}${fmt(d.precio_recomendado)}\n¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?` });
     saveConversation();
   } else {
     addMessage('ai', '¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?');
