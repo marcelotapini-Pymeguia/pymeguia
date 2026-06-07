@@ -1127,6 +1127,25 @@ Si el emprendedor no sabe su valor hora o prefiere calcularlo al final:
 Esto es OBLIGATORIO — NUNCA bloquees el análisis por este dato.
 
 ## ═══════════════════════════════════════
+## MANEJO MULTI-PRODUCTO
+## ═══════════════════════════════════════
+
+Cuando el emprendedor menciona que vende MÁS DE UN producto:
+
+PASO 1 — INVENTARIO: "Hacemos una lista rápida. ¿Cuáles son tus productos, a qué precio vendés cada uno y cuántas unidades por mes?"
+Registrar: nombre, precio, volumen mensual de CADA producto.
+
+PASO 2 — COSTOS FIJOS: preguntar UNA SOLA VEZ (Bloque 3 completo). Distribuir entre el TOTAL de unidades de todos los productos.
+
+PASO 3 — COSTOS DIRECTOS: preguntar POR PRODUCTO, uno por uno. "Arranquemos por [producto 1]. ¿Cuánto te cuesta producir uno?" Completar el Bloque 2 entero para ese producto. Después: "Ahora [producto 2]..." y así con cada uno.
+
+PASO 4 — COSTOS VARIABLES: preguntar la plataforma y comisión UNA VEZ. Calcular automáticamente para cada producto según su precio.
+
+PASO 5 — RESULTADOS: generar JSON multi-producto (ver formato abajo).
+
+Si vende UN SOLO producto, el flujo es el normal (bloques 1-5 estándar).
+
+## ═══════════════════════════════════════
 ## ESQUEMA DE PREGUNTAS — ORDEN OBLIGATORIO
 ## ═══════════════════════════════════════
 
@@ -1135,8 +1154,20 @@ Esto es OBLIGATORIO — NUNCA bloquees el análisis por este dato.
 1.2 → Qué hace/vende (descripción libre — explorá si algo no queda claro)
 1.3 → Antigüedad del negocio
 1.4 → Tipo: fabrica / revende / servicios / ambos
-1.5 → Volumen mensual (unidades o trabajos por mes) — si es vago, pedí que detalle
-1.6 → Precio actual de venta
+1.5 → ¿Cuántos productos o servicios distintos vendés?
+  → SI UNO SOLO: pedir nombre, precio y volumen mensual. Continuar normal.
+  → SI VARIOS: hacer inventario rápido:
+    "Hagamos una lista. Decime el nombre, precio y cuántos vendés por mes de cada uno."
+    Registrar cada producto con: nombre + precio + unidades/mes
+    Calcular TOTAL unidades/mes (suma de todos)
+1.6 → Confirmar la lista antes de continuar
+
+## FLUJO MULTI-PRODUCTO
+Cuando hay más de un producto:
+- BLOQUE 2: analizar costos directos de CADA producto por separado, uno a la vez. "Arranquemos por [producto 1]..." Después: "Ahora [producto 2]..."
+- BLOQUE 3: preguntar costos fijos UNA SOLA VEZ. Dividir entre el TOTAL de unidades mensuales (todos los productos sumados).
+- BLOQUE 4: preguntar plataforma y % de comisión UNA VEZ. Calcular el monto por producto según su precio individual. El envío preguntar si es igual para todos o diferente.
+- BLOQUE 5: mostrar resultados POR PRODUCTO + un CONSOLIDADO total.
 
 ### BLOQUE 2 — COSTOS DIRECTOS (varía según tipo de negocio)
 
@@ -1224,15 +1255,21 @@ Nivel 3: "Uso un estimado promedio. Lo ajustás después con los números reales
 ## CUÁNDO MOSTRAR RESULTADOS
 Cuando tengas TODOS los datos de los 5 bloques, terminá tu mensaje con:
 [RESULTADOS_LISTOS]
-{"negocio":"nombre","producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_elegido":30,"margen_actual_pct":0,"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes":0,"moneda":"€","tiempo_horas":0,"valor_hora":0,"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","desglose":[{"concepto":"nombre","valor":0}],"consejo_principal":"consejo específico","problema_detectado":"problema principal"}
+
+FORMATO PRODUCTO ÚNICO:
+{"modo":"single","negocio":"nombre","producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_elegido":30,"margen_actual_pct":0,"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes":0,"moneda":"€","tiempo_horas":0,"valor_hora":0,"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","desglose":[{"concepto":"nombre","valor":0}],"consejo_principal":"consejo","problema_detectado":"problema"}
+
+FORMATO MULTI-PRODUCTO:
+{"modo":"multi","negocio":"nombre","moneda":"€","margen_elegido":30,"productos":[{"producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_actual_pct":0,"ganancia_unidad":0,"unidades_mes":0,"tiempo_horas":0,"valor_hora":0,"desglose":[{"concepto":"nombre","valor":0}]}],"consolidado":{"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes_total":0,"costo_fijo_mensual_total":0},"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","consejo_principal":"consejo","problema_detectado":"problema"}
 
 REGLAS DEL JSON:
-- precio_recomendado SIEMPRE = costo_total / (1 - margen_elegido/100). Verificar antes de generar.
-- costo_total SIEMPRE = suma exacta de todos los ítems del desglose. Verificar.
+- modo: "single" si es un solo producto, "multi" si son varios
+- precio_recomendado SIEMPRE = costo_total / (1 - margen_elegido/100). VERIFICAR antes de generar.
+- costo_total SIEMPRE = suma exacta de todos los ítems del desglose. VERIFICAR.
+- En multi-producto: costo_fijo_unit se calcula dividiendo los fijos totales entre TODAS las unidades de todos los productos, NO entre las unidades de un solo producto.
 - consejo_principal: todos los números deben coincidir con los del desglose. No inventar cifras.
 - desglose: cada concepto UNA sola vez. Sin duplicados.
 - tiempo_horas y valor_hora: si no definió valor hora, valor_hora=0, completar mercado bajo/medio/alto según rubro+país.
-- Valores mercado: artesanos mimbre España (€8/€12/€18), consultores IT Argentina ($15/$25/$40), diseñadores México ($150/$300/$500 MXN), panaderos España (€10/€14/€20). Adaptar al rubro real.
 - JSON en UNA SOLA LÍNEA, sin saltos, sin markdown, sin backticks.
 - margen_elegido: el porcentaje que eligió el emprendedor (20, 30 o 40).
 
@@ -1518,221 +1555,114 @@ window.autoResize = function(el) {
 // ── Results ──
 function showResults(data) {
   showScreen('results-screen');
-  const currency = data.moneda || '€';
-
-  // Build clean desglose — only costs, no derived metrics
-  const desgloseItems = data.desglose && data.desglose.length > 0
-    ? data.desglose.filter(r => r.valor > 0)
-    : [
-        { concepto: 'Costos directos de producción', valor: data.costo_directo },
-        { concepto: 'Gastos fijos proporcionales', valor: data.costo_fijo_unit },
-        { concepto: 'Costos variables por venta', valor: data.costo_variable },
-      ].filter(r => r.valor > 0);
-
-  // Recalculate costo_total from desglose to ensure consistency across all metrics
-  const costoTotalCalculado = desgloseItems.reduce((sum, r) => sum + r.valor, 0);
-  const costoTotal = costoTotalCalculado > 0 ? costoTotalCalculado : data.costo_total;
-
-  // ALL metrics derived from the SAME costoTotal — no inconsistencies
-  const gananciaPorUnidadReal = data.precio_actual - costoTotal;
-  const margenReal = data.precio_actual > 0 ? (gananciaPorUnidadReal / data.precio_actual) * 100 : 0;
-  const gananciaRecomendada = data.precio_recomendado - costoTotal;
-  const gananciaMensualReal = gananciaPorUnidadReal * data.unidades_mes;
-  const gananciaMensualRec = gananciaRecomendada * data.unidades_mes;
-  const gananciaAnualRec = gananciaMensualRec * 12;
-
-  // Status banner uses the same recalculated values
-  let statusClass = 'success', statusIcon = '✅', statusTitle = 'Buen margen', statusSub = `Ganás ${currency}${fmt(gananciaPorUnidadReal)} por unidad — margen del ${margenReal.toFixed(1)}%`;
-  if (margenReal < 0) {
-    statusClass = 'danger'; statusIcon = '🚨';
-    statusTitle = 'Estás perdiendo dinero';
-    statusSub = `Perdés ${currency}${fmt(Math.abs(gananciaPorUnidadReal))} por cada unidad que vendés`;
-  } else if (margenReal < 20) {
-    statusClass = 'warn'; statusIcon = '⚠️';
-    statusTitle = 'Margen muy ajustado';
-    statusSub = `Ganás ${currency}${fmt(gananciaPorUnidadReal)} por unidad — cualquier imprevisto te come la ganancia`;
-  }
-
-  // Detect if user didn't set hourly value — flag for showing hourly value insight
-  const tieneTiempoTrabajo = data.tiempo_horas && data.tiempo_horas > 0;
-  const valorHoraDefinido = data.valor_hora && data.valor_hora > 0;
-  const mostrarConsejoHoras = tieneTiempoTrabajo && !valorHoraDefinido;
-  // Hourly value calculations using market-specific rates
-  let horaCalculada = null, precioBajo = null, precioMedio = null, precioAlto = null;
-  let horaMercadoBajo = data.valor_hora_mercado_bajo || 0;
-  let horaMercadoMedio = data.valor_hora_mercado_medio || 0;
-  let horaMercadoAlto = data.valor_hora_mercado_alto || 0;
-  const rubroRef = data.rubro_referencia || 'tu rubro';
-  if (tieneTiempoTrabajo) {
-    horaCalculada = gananciaPorUnidadReal / data.tiempo_horas;
-    // Fallback if AI didn't provide market values
-    if (horaMercadoBajo === 0) horaMercadoBajo = 10;
-    if (horaMercadoMedio === 0) horaMercadoMedio = 14;
-    if (horaMercadoAlto === 0) horaMercadoAlto = 18;
-    const horasPorUnidad = data.tiempo_horas;
-    precioBajo = costoTotal + (horasPorUnidad * horaMercadoBajo);
-    precioMedio = costoTotal + (horasPorUnidad * horaMercadoMedio);
-    precioAlto = costoTotal + (horasPorUnidad * horaMercadoAlto);
-  }
-
-
-
+  window.lastResultsData = data;
+  const c = data.moneda || '€';
   const body = document.getElementById('results-body');
-  body.innerHTML = `
 
-    <!-- HEADER -->
-    <div class="results-title-section">
-      <div class="results-eyebrow">Análisis completado</div>
-      <div class="results-title">${data.negocio}</div>
-      <div class="results-subtitle">${data.producto}</div>
-    </div>
+  if (data.modo === 'multi' && data.productos && data.productos.length > 0) {
+    // ═══ MULTI-PRODUCT MODE ═══
+    const con = data.consolidado || {};
+    let productCards = '';
+    data.productos.forEach((p, i) => {
+      const desg = p.desglose && p.desglose.length > 0 ? p.desglose.filter(r => r.valor > 0) : [];
+      const ct = desg.length > 0 ? desg.reduce((s,r) => s + r.valor, 0) : p.costo_total;
+      const gan = p.precio_actual - ct;
+      const margen = p.precio_actual > 0 ? (gan / p.precio_actual) * 100 : 0;
+      const precRec = ct / (1 - (data.margen_elegido || 30) / 100);
+      let sClass = 'success', sIcon = '✅', sText = `Margen ${margen.toFixed(1)}%`;
+      if (margen < 0) { sClass = 'danger'; sIcon = '🚨'; sText = `Perdés ${c}${fmt(Math.abs(gan))}/ud`; }
+      else if (margen < 20) { sClass = 'warn'; sIcon = '⚠️'; sText = `Margen ajustado ${margen.toFixed(1)}%`; }
 
-    <!-- PASO 1: LO QUE TE CUESTA -->
-    <div class="results-step">
-      <div class="results-step-label">① Lo que te cuesta producir cada unidad</div>
-      <div class="section-card">
-        <div class="section-card-header">📦 Desglose de costos</div>
-        ${desgloseItems.map(r => `
-          <div class="cost-row">
-            <span class="cost-label">${r.concepto}</span>
-            <span class="cost-value">${currency}${fmt(r.valor)}</span>
-          </div>`).join('')}
-        <div class="cost-row total">
-          <span class="cost-label">COSTO TOTAL por unidad</span>
-          <span class="cost-value">${currency}${fmt(costoTotal)}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- PASO 2: LO QUE COBRÁS HOY -->
-    <div class="results-step">
-      <div class="results-step-label">② Lo que cobrás hoy y qué te deja</div>
-      <div class="status-banner ${statusClass}">
-        <div class="status-icon">${statusIcon}</div>
-        <div>
-          <div class="status-text-title">${statusTitle}</div>
-          <div class="status-text-sub">${statusSub}</div>
-        </div>
-      </div>
-      <div class="metrics-grid" style="grid-template-columns: repeat(2, 1fr);">
-        <div class="metric-card">
-          <div class="metric-label">Tu precio actual</div>
-          <div class="metric-value">${currency}${fmt(data.precio_actual)}</div>
-          <div class="metric-desc">Lo que cobrás hoy</div>
-        </div>
-        <div class="metric-card ${margenReal < 0 ? 'danger-border' : margenReal < 20 ? 'warn-border' : 'success-border'}">
-          <div class="metric-label">Ganancia por unidad</div>
-          <div class="metric-value" style="color: ${margenReal < 0 ? 'var(--danger)' : margenReal < 20 ? 'var(--warn)' : 'var(--success)'}">
-            ${currency}${fmt(gananciaPorUnidadReal)}
+      productCards += `
+        <div class="section-card" style="margin-bottom:16px;animation-delay:${i*0.08}s">
+          <div class="section-card-header">📦 ${p.producto} — ${p.unidades_mes} uds/mes</div>
+          ${desg.map(r => `<div class="cost-row"><span class="cost-label">${r.concepto}</span><span class="cost-value">${c}${fmt(r.valor)}</span></div>`).join('')}
+          <div class="cost-row total"><span class="cost-label">Costo total</span><span class="cost-value">${c}${fmt(ct)}</span></div>
+          <div style="padding:10px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+            <div><div class="metric-label">Precio actual</div><div style="font-size:18px;font-weight:700;">${c}${fmt(p.precio_actual)}</div></div>
+            <div><div class="metric-label">Ganancia/ud</div><div style="font-size:18px;font-weight:700;color:${margen<0?'var(--danger)':margen<20?'var(--warn)':'var(--success)'};">${c}${fmt(gan)}</div></div>
+            <div><div class="metric-label">Precio rec.</div><div style="font-size:18px;font-weight:700;color:var(--accent);">${c}${fmt(precRec)}</div></div>
           </div>
-          <div class="metric-desc">Precio actual − costo total</div>
-        </div>
-        <div class="metric-card" style="grid-column: 1/-1;">
-          <div class="metric-label">Ganancia mensual actual</div>
-          <div class="metric-value" style="color: ${gananciaMensualReal < 0 ? 'var(--danger)' : 'var(--text)'}">
-            ${currency}${fmt(gananciaMensualReal)}
+          <div class="status-banner ${sClass}" style="margin:0 18px 14px;border-radius:8px;padding:8px 12px;">
+            <div class="status-icon" style="font-size:16px;">${sIcon}</div>
+            <div class="status-text-sub" style="font-size:12px;">${sText}</div>
           </div>
-          <div class="metric-desc">Con ${data.unidades_mes} unidades/mes a tu precio actual</div>
+        </div>`;
+    });
+
+    const ganMes = con.ganancia_mensual || 0;
+    const ganAnual = con.ganancia_anual || ganMes * 12;
+
+    body.innerHTML = `
+      <div class="results-title-section">
+        <div class="results-eyebrow">Análisis completado — ${data.productos.length} productos</div>
+        <div class="results-title">${data.negocio}</div>
+      </div>
+      ${productCards}
+      <div class="results-step">
+        <div class="results-step-label">📊 Consolidado</div>
+        <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
+          <div class="metric-card success-border"><div class="metric-label">Ganancia mensual total</div><div class="metric-value" style="color:var(--success)">${c}${fmt(ganMes)}</div><div class="metric-desc">Con ${con.unidades_mes_total || '—'} unidades/mes</div></div>
+          <div class="metric-card success-border"><div class="metric-label">Ganancia anual proyectada</div><div class="metric-value" style="color:var(--success)">${c}${fmt(ganAnual)}</div><div class="metric-desc">Si mantenés el volumen actual</div></div>
         </div>
       </div>
-    </div>
+      ${data.consejo_principal ? `<div class="advice-card"><div class="advice-title">💡 Consejo para tu negocio</div><div class="advice-text">${data.consejo_principal}</div></div>` : ''}
+      <div class="philosophy-card"><div class="philosophy-title">Precio, costo y valor percibido</div><div class="philosophy-text">El precio mínimo es tu piso — por debajo de ese número cada venta te cuesta dinero.<br><br><em>Los costos te dicen hasta dónde podés bajar. El mercado te dice hasta dónde podés subir. Tu trabajo es encontrar ese punto.</em></div></div>
+      <div class="results-actions"><button class="btn-primary" onclick="continueChat()">Continuar conversación →</button></div>`;
 
-    <!-- PASO 3: LO QUE DEBERÍAS COBRAR -->
-    <div class="results-step">
-      <div class="results-step-label">③ Lo que deberías cobrar</div>
-      <div class="metrics-grid" style="grid-template-columns: repeat(2, 1fr);">
-        <div class="metric-card danger-border">
-          <div class="metric-label">Precio mínimo</div>
-          <div class="metric-value">${currency}${fmt(costoTotal)}</div>
-          <div class="metric-desc">Tu costo total — por debajo de esto perdés dinero</div>
-        </div>
-        <div class="metric-card accent-border">
-          <div class="metric-label">Precio recomendado</div>
-          <div class="metric-value" style="color: var(--accent)">${currency}${fmt(data.precio_recomendado)}</div>
-          <div class="metric-desc">Con margen del ${data.margen_elegido || 30}% — ${data.margen_elegido === 20 ? 'conservador' : data.margen_elegido === 40 ? 'ambicioso' : 'recomendado'}</div>
-        </div>
-      </div>
-      <div class="results-gap-note">
-        ${data.precio_actual < data.precio_recomendado
-          ? `<span class="gap-warn">⬆️ Diferencia con tu precio actual: ${currency}${fmt(data.precio_recomendado - data.precio_actual)} por unidad</span>`
-          : `<span class="gap-ok">✅ Tu precio actual ya está por encima del recomendado</span>`
-        }
-      </div>
-    </div>
+  } else {
+    // ═══ SINGLE PRODUCT MODE ═══
+    const desgloseItems = data.desglose && data.desglose.length > 0
+      ? data.desglose.filter(r => r.valor > 0)
+      : [{ concepto: 'Costos directos', valor: data.costo_directo },{ concepto: 'Gastos fijos', valor: data.costo_fijo_unit },{ concepto: 'Costos variables', valor: data.costo_variable }].filter(r => r.valor > 0);
+    const costoTotal = desgloseItems.reduce((s,r) => s+r.valor, 0) || data.costo_total;
+    const gan = data.precio_actual - costoTotal;
+    const margenReal = data.precio_actual > 0 ? (gan / data.precio_actual) * 100 : 0;
+    const precRecVerificado = costoTotal / (1 - (data.margen_elegido || 30) / 100);
+    const ganRec = precRecVerificado - costoTotal;
+    const ganMesReal = gan * data.unidades_mes;
+    const ganMesRec = ganRec * data.unidades_mes;
+    const ganAnualRec = ganMesRec * 12;
+    let statusClass='success',statusIcon='✅',statusTitle='Buen margen',statusSub=`Ganás ${c}${fmt(gan)} por unidad — margen del ${margenReal.toFixed(1)}%`;
+    if(margenReal<0){statusClass='danger';statusIcon='🚨';statusTitle='Estás perdiendo dinero';statusSub=`Perdés ${c}${fmt(Math.abs(gan))} por cada unidad que vendés`;}
+    else if(margenReal<20){statusClass='warn';statusIcon='⚠️';statusTitle='Margen muy ajustado';statusSub=`Ganás ${c}${fmt(gan)} por unidad — cualquier imprevisto te come la ganancia`;}
 
-    <!-- PASO 4: PROYECCIÓN -->
-    <div class="results-step">
-      <div class="results-step-label">④ Qué ganarías al precio recomendado</div>
-      <div class="metrics-grid" style="grid-template-columns: repeat(2, 1fr);">
-        <div class="metric-card success-border">
-          <div class="metric-label">Ganancia mensual</div>
-          <div class="metric-value" style="color: var(--success)">${currency}${fmt(gananciaMensualRec)}</div>
-          <div class="metric-desc">Con ${data.unidades_mes} unidades/mes</div>
-        </div>
-        <div class="metric-card success-border">
-          <div class="metric-label">Ganancia anual proyectada</div>
-          <div class="metric-value" style="color: var(--success)">${currency}${fmt(gananciaAnualRec)}</div>
-          <div class="metric-desc">Si mantenés el volumen actual</div>
-        </div>
-      </div>
-    </div>
+    const tieneTiempo = data.tiempo_horas && data.tiempo_horas > 0;
+    const sinValorHora = !data.valor_hora || data.valor_hora === 0;
+    const mostrarHoras = tieneTiempo && sinValorHora;
+    let horaCalc=null,pBajo=null,pMedio=null,pAlto=null;
+    let hBajo=data.valor_hora_mercado_bajo||10,hMedio=data.valor_hora_mercado_medio||14,hAlto=data.valor_hora_mercado_alto||18;
+    const rubroRef=data.rubro_referencia||'tu rubro';
+    if(tieneTiempo){horaCalc=gan/data.tiempo_horas;pBajo=costoTotal+(data.tiempo_horas*hBajo);pMedio=costoTotal+(data.tiempo_horas*hMedio);pAlto=costoTotal+(data.tiempo_horas*hAlto);}
 
-    <!-- CONSEJO -->
-    ${data.consejo_principal ? `
-    <div class="advice-card">
-      <div class="advice-title">💡 Consejo para tu negocio</div>
-      <div class="advice-text">${data.consejo_principal}</div>
-    </div>` : ''}
-
-    <!-- VALOR HORA — solo si no definió valor hora -->
-    ${mostrarConsejoHoras ? `
-    <div class="advice-card" style="border-left-color: var(--warn);">
-      <div class="advice-title" style="color: var(--warn);">⏱️ Tu hora de trabajo</div>
-      <div class="advice-text">
-        Notamos que no definiste un valor para tu hora de trabajo — es algo que la mayoría de los emprendedores no calcula. Pero es uno de los datos que más cambia tu margen real.<br><br>
-        <strong>Con tu precio actual de ${currency}${fmt(data.precio_actual)} y ${data.tiempo_horas} ${data.tiempo_horas === 1 ? 'hora' : 'horas'} por unidad, tu hora te está dejando ${currency}${fmt(horaCalculada)}.</strong>
-        ${horaCalculada < 0 ? ' Eso significa que estás pagando por trabajar.' : horaCalculada < horaMercadoBajo ? ' Está por debajo del mínimo de mercado.' : ''}
-        <br><br>
-        Para que tu hora valga lo que cobran ${rubroRef}, estos son los precios de referencia:
-        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px; padding: 12px; background: var(--surface2); border-radius: var(--radius-sm);">
-          <div style="display: flex; justify-content: space-between;"><span>Tarifa baja del mercado — hora a ${currency}${fmt(horaMercadoBajo)}</span><strong>Precio: ${currency}${fmt(precioBajo)}</strong></div>
-          <div style="display: flex; justify-content: space-between;"><span>Tarifa media del mercado — hora a ${currency}${fmt(horaMercadoMedio)}</span><strong>Precio: ${currency}${fmt(precioMedio)}</strong></div>
-          <div style="display: flex; justify-content: space-between;"><span>Tarifa premium — hora a ${currency}${fmt(horaMercadoAlto)}</span><strong>Precio: ${currency}${fmt(precioAlto)}</strong></div>
-        </div>
-      </div>
-    </div>` : ''}
-
-    <!-- REFLEXIÓN -->
-    <div class="philosophy-card">
-      <div class="philosophy-title">Precio, costo y valor percibido</div>
-      <div class="philosophy-text">
-        El precio mínimo es tu piso — por debajo de ese número cada venta te cuesta dinero.<br><br>
-        <em>Los costos te dicen hasta dónde podés bajar. El mercado te dice hasta dónde podés subir. Tu trabajo es encontrar ese punto.</em>
-      </div>
-    </div>
-
-    <!-- CONTINUAR -->
-    <div class="results-actions">
-      <button class="btn-primary" onclick="continueChat()">Continuar conversación →</button>
-    </div>
-  `;
+    body.innerHTML = `
+      <div class="results-title-section"><div class="results-eyebrow">Análisis completado</div><div class="results-title">${data.negocio}</div><div class="results-subtitle">${data.producto}</div></div>
+      <div class="results-step"><div class="results-step-label">① Lo que te cuesta producir cada unidad</div>
+        <div class="section-card"><div class="section-card-header">📦 Desglose de costos</div>
+          ${desgloseItems.map(r=>`<div class="cost-row"><span class="cost-label">${r.concepto}</span><span class="cost-value">${c}${fmt(r.valor)}</span></div>`).join('')}
+          <div class="cost-row total"><span class="cost-label">COSTO TOTAL por unidad</span><span class="cost-value">${c}${fmt(costoTotal)}</span></div></div></div>
+      <div class="results-step"><div class="results-step-label">② Lo que cobrás hoy y qué te deja</div>
+        <div class="status-banner ${statusClass}"><div class="status-icon">${statusIcon}</div><div><div class="status-text-title">${statusTitle}</div><div class="status-text-sub">${statusSub}</div></div></div>
+        <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
+          <div class="metric-card"><div class="metric-label">Tu precio actual</div><div class="metric-value">${c}${fmt(data.precio_actual)}</div><div class="metric-desc">Lo que cobrás hoy</div></div>
+          <div class="metric-card ${margenReal<0?'danger-border':margenReal<20?'warn-border':'success-border'}"><div class="metric-label">Ganancia por unidad</div><div class="metric-value" style="color:${margenReal<0?'var(--danger)':margenReal<20?'var(--warn)':'var(--success)'}">${c}${fmt(gan)}</div><div class="metric-desc">Precio actual − costo total</div></div>
+          <div class="metric-card" style="grid-column:1/-1;"><div class="metric-label">Ganancia mensual actual</div><div class="metric-value" style="color:${ganMesReal<0?'var(--danger)':'var(--text)'}">${c}${fmt(ganMesReal)}</div><div class="metric-desc">Con ${data.unidades_mes} unidades/mes a tu precio actual</div></div></div></div>
+      <div class="results-step"><div class="results-step-label">③ Lo que deberías cobrar</div>
+        <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
+          <div class="metric-card danger-border"><div class="metric-label">Precio mínimo</div><div class="metric-value">${c}${fmt(costoTotal)}</div><div class="metric-desc">Tu costo total — por debajo perdés dinero</div></div>
+          <div class="metric-card accent-border"><div class="metric-label">Precio recomendado</div><div class="metric-value" style="color:var(--accent)">${c}${fmt(precRecVerificado)}</div><div class="metric-desc">Con margen del ${data.margen_elegido||30}% — ${(data.margen_elegido||30)===20?'conservador':(data.margen_elegido||30)===40?'ambicioso':'recomendado'}</div></div></div>
+        <div class="results-gap-note">${data.precio_actual<precRecVerificado?`<span class="gap-warn">⬆️ Diferencia con tu precio actual: ${c}${fmt(precRecVerificado-data.precio_actual)} por unidad</span>`:`<span class="gap-ok">✅ Tu precio actual ya está por encima del recomendado</span>`}</div></div>
+      <div class="results-step"><div class="results-step-label">④ Qué ganarías al precio recomendado</div>
+        <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
+          <div class="metric-card success-border"><div class="metric-label">Ganancia mensual</div><div class="metric-value" style="color:var(--success)">${c}${fmt(ganMesRec)}</div><div class="metric-desc">Con ${data.unidades_mes} unidades/mes</div></div>
+          <div class="metric-card success-border"><div class="metric-label">Ganancia anual proyectada</div><div class="metric-value" style="color:var(--success)">${c}${fmt(ganAnualRec)}</div><div class="metric-desc">Si mantenés el volumen actual</div></div></div></div>
+      ${data.consejo_principal?`<div class="advice-card"><div class="advice-title">💡 Consejo para tu negocio</div><div class="advice-text">${data.consejo_principal}</div></div>`:''}
+      ${mostrarHoras?`<div class="advice-card" style="border-left-color:var(--warn);"><div class="advice-title" style="color:var(--warn);">⏱️ Tu hora de trabajo</div><div class="advice-text">Notamos que no definiste un valor para tu hora de trabajo — la mayoría de los emprendedores no lo calcula. Pero es uno de los datos que más cambia tu margen real.<br><br><strong>Con tu precio actual de ${c}${fmt(data.precio_actual)} y ${data.tiempo_horas} horas por unidad, tu hora te está dejando ${c}${fmt(horaCalc)}.</strong>${horaCalc<0?' Estás pagando por trabajar.':horaCalc<hBajo?' Está por debajo del mínimo de mercado.':''}<br><br>Para que tu hora valga lo que cobran ${rubroRef}:<div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;padding:12px;background:var(--surface2);border-radius:var(--radius-sm);"><div style="display:flex;justify-content:space-between;"><span>Tarifa baja — ${c}${fmt(hBajo)}/h</span><strong>Precio: ${c}${fmt(pBajo)}</strong></div><div style="display:flex;justify-content:space-between;"><span>Tarifa media — ${c}${fmt(hMedio)}/h</span><strong>Precio: ${c}${fmt(pMedio)}</strong></div><div style="display:flex;justify-content:space-between;"><span>Tarifa premium — ${c}${fmt(hAlto)}/h</span><strong>Precio: ${c}${fmt(pAlto)}</strong></div></div></div></div>`:``}
+      <div class="philosophy-card"><div class="philosophy-title">Precio, costo y valor percibido</div><div class="philosophy-text">El precio mínimo es tu piso — por debajo de ese número cada venta te cuesta dinero.<br><br><em>Los costos te dicen hasta dónde podés bajar. El mercado te dice hasta dónde podés subir. Tu trabajo es encontrar ese punto.</em></div></div>
+      <div class="results-actions"><button class="btn-primary" onclick="continueChat()">Continuar conversación →</button></div>`;
+  }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function buildCostRows(data, currency) {
-  let rows = '';
-  if (data.desglose && data.desglose.length > 0) {
-    data.desglose.forEach(r => {
-      rows += `<div class="cost-row"><span class="cost-label">${r.concepto}</span><span class="cost-value">${currency}${fmt(r.valor)}</span></div>`;
-    });
-  } else {
-    rows += `<div class="cost-row"><span class="cost-label">Costos directos de producción</span><span class="cost-value">${currency}${fmt(data.costo_directo)}</span></div>`;
-    rows += `<div class="cost-row"><span class="cost-label">Gastos fijos proporcionales</span><span class="cost-value">${currency}${fmt(data.costo_fijo_unit)}</span></div>`;
-    rows += `<div class="cost-row"><span class="cost-label">Costos variables por venta</span><span class="cost-value">${currency}${fmt(data.costo_variable)}</span></div>`;
-  }
-  rows += `<div class="cost-row total"><span class="cost-label">COSTO TOTAL por unidad</span><span class="cost-value">${currency}${fmt(data.costo_total)}</span></div>`;
-  return rows;
 }
 
 function fmt(n) {
@@ -1747,73 +1677,82 @@ window.continueChat = function() {
   if (window.lastResultsData) {
     const d = window.lastResultsData;
     const c = d.moneda || '€';
-    const desgloseItems = d.desglose && d.desglose.length > 0
-      ? d.desglose.filter(r => r.valor > 0)
-      : [
-          { concepto: 'Costos directos', valor: d.costo_directo },
-          { concepto: 'Gastos fijos', valor: d.costo_fijo_unit },
-          { concepto: 'Costos variables', valor: d.costo_variable },
-        ].filter(r => r.valor > 0);
-    const costoTotal = desgloseItems.reduce((sum, r) => sum + r.valor, 0) || d.costo_total;
-    const ganancia = d.precio_actual - costoTotal;
-    const margen = d.precio_actual > 0 ? (ganancia / d.precio_actual) * 100 : 0;
-    let statusColor = '#059669', statusBg = '#ecfdf5', statusBorder = '#a7f3d0', statusIcon = '✅', statusText = 'Buen margen';
-    if (margen < 0) { statusColor = '#dc2626'; statusBg = '#fef2f2'; statusBorder = '#fca5a5'; statusIcon = '🚨'; statusText = 'Estás perdiendo dinero'; }
-    else if (margen < 20) { statusColor = '#d97706'; statusBg = '#fffbeb'; statusBorder = '#fde68a'; statusIcon = '⚠️'; statusText = 'Margen ajustado'; }
-
-    const cardHtml = `
-      <div style="background:white;border-radius:14px;border:1px solid #e4e7ec;overflow:hidden;margin:4px 0;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
-        <div style="background:#1F4E79;color:white;padding:10px 14px;font-size:13px;font-weight:600;">📊 Resultados — ${d.negocio} · ${d.producto}</div>
-        <div style="padding:12px 14px;">
-          <div style="background:${statusBg};border:1px solid ${statusBorder};border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
-            <span style="font-size:18px;">${statusIcon}</span>
-            <span style="font-size:12px;color:${statusColor};font-weight:600;">${statusText} — ${c}${fmt(ganancia)} por unidad (${margen.toFixed(1)}%)</span>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
-            <div style="background:#f7f8fa;border-radius:8px;padding:8px 10px;">
-              <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Costo total</div>
-              <div style="font-size:16px;font-weight:700;color:#2563eb;">${c}${fmt(costoTotal)}</div>
-            </div>
-            <div style="background:#f7f8fa;border-radius:8px;padding:8px 10px;">
-              <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Precio actual</div>
-              <div style="font-size:16px;font-weight:700;">${c}${fmt(d.precio_actual)}</div>
-            </div>
-            <div style="background:#f7f8fa;border-radius:8px;padding:8px 10px;">
-              <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Precio mínimo</div>
-              <div style="font-size:16px;font-weight:700;color:#dc2626;">${c}${fmt(costoTotal)}</div>
-            </div>
-            <div style="background:#f7f8fa;border-radius:8px;padding:8px 10px;">
-              <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Precio recomendado</div>
-              <div style="font-size:16px;font-weight:700;color:#059669;">${c}${fmt(d.precio_recomendado)}</div>
-            </div>
-          </div>
-          <div style="border-top:1px solid #e4e7ec;padding-top:8px;">
-            ${desgloseItems.map(r => `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:11px;"><span style="color:#6b7280;">${r.concepto}</span><span style="font-weight:500;">${c}${fmt(r.valor)}</span></div>`).join('')}
-            <div style="display:flex;justify-content:space-between;padding:5px 0 0;margin-top:4px;border-top:1px solid #e4e7ec;font-size:12px;font-weight:600;"><span>COSTO TOTAL</span><span style="color:#2563eb;">${c}${fmt(costoTotal)}</span></div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Add card as special AI message
     const container = document.getElementById('chat-messages');
+
     const wrap = document.createElement('div');
     wrap.className = 'msg-wrap ai';
+    wrap.style.maxWidth = '100%';
     const avatar = document.createElement('div');
     avatar.className = 'msg-avatar ai';
     avatar.textContent = 'PG';
     const bubble = document.createElement('div');
     bubble.className = 'msg-bubble';
-    bubble.style.padding = '6px';
-    bubble.style.maxWidth = '100%';
-    bubble.innerHTML = cardHtml;
+    bubble.style.padding = '0';
+    bubble.style.maxWidth = '440px';
+    bubble.style.width = '100%';
+    bubble.style.overflow = 'hidden';
+    bubble.style.borderRadius = '14px';
+
+    let cardContent = '';
+    if (d.modo === 'multi' && d.productos) {
+      const con = d.consolidado || {};
+      let prodRows = d.productos.map(p => {
+        const ct = p.desglose ? p.desglose.filter(r=>r.valor>0).reduce((s,r)=>s+r.valor,0) : p.costo_total;
+        const g = p.precio_actual - ct;
+        const m = p.precio_actual > 0 ? (g/p.precio_actual*100) : 0;
+        const precRec = ct / (1 - (d.margen_elegido||30)/100);
+        const sColor = m < 0 ? '#dc2626' : m < 20 ? '#d97706' : '#059669';
+        return `
+          <div style="padding:10px 14px;border-bottom:1px solid #e4e7ec;">
+            <div style="font-weight:600;font-size:13px;margin-bottom:6px;">${p.producto} <span style="color:#9ca3af;font-weight:400;font-size:11px;">(${p.unidades_mes} uds/mes)</span></div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;">
+              <div><div style="font-size:8px;color:#9ca3af;text-transform:uppercase;">Costo</div><div style="font-size:14px;font-weight:600;">${c}${fmt(ct)}</div></div>
+              <div><div style="font-size:8px;color:#9ca3af;text-transform:uppercase;">Precio</div><div style="font-size:14px;font-weight:600;">${c}${fmt(p.precio_actual)}</div></div>
+              <div><div style="font-size:8px;color:#9ca3af;text-transform:uppercase;">Ganancia</div><div style="font-size:14px;font-weight:600;color:${sColor};">${c}${fmt(g)}</div></div>
+              <div><div style="font-size:8px;color:#9ca3af;text-transform:uppercase;">Recomend.</div><div style="font-size:14px;font-weight:600;color:#2563eb;">${c}${fmt(precRec)}</div></div>
+            </div>
+          </div>`;
+      }).join('');
+      const ganMes = con.ganancia_mensual || 0;
+      const ganAnual = con.ganancia_anual || ganMes * 12;
+      cardContent = `
+        <div style="background:#1F4E79;color:white;padding:10px 14px;font-size:13px;font-weight:600;">📊 ${d.negocio} — ${d.productos.length} productos</div>
+        ${prodRows}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#e4e7ec;">
+          <div style="background:#ecfdf5;padding:10px 14px;text-align:center;"><div style="font-size:8px;color:#059669;text-transform:uppercase;font-weight:600;">Ganancia mensual</div><div style="font-size:18px;font-weight:700;color:#059669;">${c}${fmt(ganMes)}</div></div>
+          <div style="background:#ecfdf5;padding:10px 14px;text-align:center;"><div style="font-size:8px;color:#059669;text-transform:uppercase;font-weight:600;">Ganancia anual</div><div style="font-size:18px;font-weight:700;color:#059669;">${c}${fmt(ganAnual)}</div></div>
+        </div>`;
+    } else {
+      const desg = d.desglose && d.desglose.length > 0 ? d.desglose.filter(r=>r.valor>0) : [];
+      const ct = desg.length > 0 ? desg.reduce((s,r)=>s+r.valor,0) : d.costo_total;
+      const g = d.precio_actual - ct;
+      const m = d.precio_actual > 0 ? (g/d.precio_actual*100) : 0;
+      const precRec = ct / (1 - (d.margen_elegido||30)/100);
+      let sColor='#059669',sBg='#ecfdf5',sIcon='✅',sText=`Margen ${m.toFixed(1)}%`;
+      if(m<0){sColor='#dc2626';sBg='#fef2f2';sIcon='🚨';sText=`Perdés ${c}${fmt(Math.abs(g))}/ud`;}
+      else if(m<20){sColor='#d97706';sBg='#fffbeb';sIcon='⚠️';sText=`Margen ajustado ${m.toFixed(1)}%`;}
+      let desgRows = desg.slice(0,8).map(r=>`<div style="display:flex;justify-content:space-between;padding:3px 14px;font-size:11px;"><span style="color:#6b7280;">${r.concepto}</span><span style="font-weight:500;">${c}${fmt(r.valor)}</span></div>`).join('');
+      if(desg.length>8) desgRows += `<div style="padding:2px 14px;font-size:10px;color:#9ca3af;">+ ${desg.length-8} conceptos más</div>`;
+      cardContent = `
+        <div style="background:#1F4E79;color:white;padding:10px 14px;font-size:13px;font-weight:600;">📊 ${d.negocio} · ${d.producto||''}</div>
+        <div style="background:${sBg};padding:8px 14px;display:flex;align-items:center;gap:8px;font-size:12px;color:${sColor};font-weight:600;">${sIcon} ${sText}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#e4e7ec;">
+          <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Costo total</div><div style="font-size:17px;font-weight:700;color:#2563eb;">${c}${fmt(ct)}</div></div>
+          <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Precio actual</div><div style="font-size:17px;font-weight:700;">${c}${fmt(d.precio_actual)}</div></div>
+          <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Precio mínimo</div><div style="font-size:17px;font-weight:700;color:#dc2626;">${c}${fmt(ct)}</div></div>
+          <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Recomendado</div><div style="font-size:17px;font-weight:700;color:#059669;">${c}${fmt(precRec)}</div></div>
+        </div>
+        <div style="padding:4px 0;">${desgRows}</div>
+        <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f0f2f5;font-size:12px;font-weight:600;"><span>COSTO TOTAL</span><span style="color:#2563eb;">${c}${fmt(ct)}</span></div>`;
+    }
+
+    bubble.innerHTML = `<div style="background:white;border-radius:14px;border:1px solid #e4e7ec;overflow:hidden;">${cardContent}</div>`;
     wrap.appendChild(avatar);
     wrap.appendChild(bubble);
     container.appendChild(wrap);
 
-    // Add follow-up text
     addMessage('ai', '¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?');
-    conversationHistory.push({ role: 'assistant', content: `[Resumen visual del análisis mostrado en el chat]\nCosto total: ${c}${fmt(costoTotal)}, Precio actual: ${c}${fmt(d.precio_actual)}, Precio recomendado: ${c}${fmt(d.precio_recomendado)}\n¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?` });
+    conversationHistory.push({ role: 'assistant', content: '[Resumen visual del análisis]\n¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?' });
     saveConversation();
   } else {
     addMessage('ai', '¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?');
@@ -1821,8 +1760,8 @@ window.continueChat = function() {
     saveConversation();
   }
 
-  const container = document.getElementById('chat-messages');
-  container.scrollTop = container.scrollHeight;
+  const chatContainer = document.getElementById('chat-messages');
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 };
 
 </script>
