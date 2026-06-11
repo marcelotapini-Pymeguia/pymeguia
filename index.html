@@ -1267,7 +1267,13 @@ REGLAS DEL JSON:
 - precio_recomendado SIEMPRE = costo_total / (1 - margen_elegido/100). VERIFICAR antes de generar.
 - costo_total SIEMPRE = suma exacta de todos los ítems del desglose. VERIFICAR.
 - En multi-producto: costo_fijo_unit se calcula dividiendo los fijos totales entre TODAS las unidades de todos los productos, NO entre las unidades de un solo producto.
-- consejo_principal: todos los números deben coincidir con los del desglose. No inventar cifras.
+- consejo_principal: ⚠️ REGLA CRÍTICA — Antes de escribir el consejo, VERIFICAR que cada número mencionado coincida con el JSON:
+  → Si decís "te cuesta X" → X DEBE ser igual a costo_total del JSON
+  → Si decís "ganás/perdés Y por unidad" → Y DEBE ser igual a precio_actual - costo_total
+  → Si decís "perdés Z al mes" → Z DEBE ser igual a (precio_actual - costo_total) × unidades_mes
+  → Si decís "tu hora vale W" → W DEBE ser igual a (precio_actual - costo_total) / tiempo_horas
+  NUNCA inventes cifras. Si un número del consejo no coincide con el JSON, el emprendedor pierde confianza en toda la herramienta.
+- Si valor_hora es 0 (no definido), NO incluyas mano de obra en el desglose. Dejá que la sección "Tu hora de trabajo" de la app lo muestre al final.
 - desglose: cada concepto UNA sola vez. Sin duplicados.
 - tiempo_horas y valor_hora: si no definió valor hora, valor_hora=0, completar mercado bajo/medio/alto según rubro+país.
 - JSON en UNA SOLA LÍNEA, sin saltos, sin markdown, sin backticks.
