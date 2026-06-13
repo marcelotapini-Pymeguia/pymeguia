@@ -1179,6 +1179,7 @@ SI FABRICA:
 2.5 → Embalaje y presentación — TODO JUNTO, UNA SOLA VEZ: "¿Qué usás para empacar, presentar y enviar? Cajas, bolsas, papel, etiquetas, cinta — todo junto" → Registrar como UN solo concepto. ⚠️ NO volver a preguntar embalaje en ningún otro bloque.
 2.6 → Tiempo de producción por unidad (horas)
 2.7 → ¿Quién pone el tiempo? → Si sabe valor hora → registrar. Si NO sabe → "Lo calculamos al final" → valor_hora = 0. NO insistir.
+  ⚠️ CRÍTICO: Si valor_hora = 0, NO incluir NINGÚN costo de mano de obra en el desglose. Ni estimado, ni valor de mercado, ni placeholder. El desglose solo incluye costos que el emprendedor confirmó. La mano de obra se muestra ÚNICAMENTE en la sección "Tu hora de trabajo" al final de los resultados.
 2.8 → Herramientas/equipos → costo + años de vida útil (para amortización)
 
 SI REVENDE:
@@ -1273,7 +1274,7 @@ REGLAS DEL JSON:
   → Si decís "perdés Z al mes" → Z DEBE ser igual a (precio_actual - costo_total) × unidades_mes
   → Si decís "tu hora vale W" → W DEBE ser igual a (precio_actual - costo_total) / tiempo_horas
   NUNCA inventes cifras. Si un número del consejo no coincide con el JSON, el emprendedor pierde confianza en toda la herramienta.
-- Si valor_hora es 0 (no definido), NO incluyas mano de obra en el desglose. Dejá que la sección "Tu hora de trabajo" de la app lo muestre al final.
+- Si valor_hora es 0 (no definido), NO incluyas mano de obra en el desglose NI en el costo_total. NUNCA uses un valor de mercado como sustituto en el desglose — eso lo hace la app automáticamente en la sección "Tu hora de trabajo". Si incluís mano de obra con valor_hora=0, los números se duplican y el análisis queda mal. Esto es un error grave.
 - desglose: cada concepto UNA sola vez. Sin duplicados.
 - tiempo_horas y valor_hora: si no definió valor hora, valor_hora=0, completar mercado bajo/medio/alto según rubro+país.
 - JSON en UNA SOLA LÍNEA, sin saltos, sin markdown, sin backticks.
@@ -1639,7 +1640,16 @@ function showResults(data) {
     let horaCalc=null,pBajo=null,pMedio=null,pAlto=null;
     let hBajo=data.valor_hora_mercado_bajo||10,hMedio=data.valor_hora_mercado_medio||14,hAlto=data.valor_hora_mercado_alto||18;
     const rubroRef=data.rubro_referencia||'tu rubro';
-    if(tieneTiempo){horaCalc=gan/data.tiempo_horas;pBajo=costoTotal+(data.tiempo_horas*hBajo);pMedio=costoTotal+(data.tiempo_horas*hMedio);pAlto=costoTotal+(data.tiempo_horas*hAlto);}
+    if(tieneTiempo){
+      // Detect if labor is already in the desglose (AI shouldn't include it but sometimes does)
+      const laborItem = desgloseItems.find(r => r.concepto.toLowerCase().includes('tiempo') || r.concepto.toLowerCase().includes('mano de obra') || r.concepto.toLowerCase().includes('trabajo'));
+      const laborInDesglose = laborItem ? laborItem.valor : 0;
+      const costoSinLabor = costoTotal - laborInDesglose;
+      horaCalc = (data.precio_actual - costoSinLabor) / data.tiempo_horas;
+      pBajo = costoSinLabor + (data.tiempo_horas * hBajo);
+      pMedio = costoSinLabor + (data.tiempo_horas * hMedio);
+      pAlto = costoSinLabor + (data.tiempo_horas * hAlto);
+    }
 
     body.innerHTML = `
       <div class="results-title-section"><div class="results-eyebrow">Análisis completado</div><div class="results-title">${data.negocio}</div><div class="results-subtitle">${data.producto}</div></div>
