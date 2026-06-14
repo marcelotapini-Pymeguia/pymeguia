@@ -1173,9 +1173,9 @@ Cuando hay más de un producto:
 
 SI FABRICA:
 2.1 → Nombre del producto principal
-2.2 → "Contame cómo lo hacés desde cero" (respuesta libre, extraé cada componente)
+2.2 → "¿Qué materiales o componentes lleva tu producto? Hacemos una lista — desde la materia prima principal hasta el último detalle." (extraé cada componente)
 2.3 → Para CADA insumo mencionado: ¿cuánto pagás? ¿cuántas unidades salen de esa compra? → REGISTRAR nombre + costo por unidad
-2.4 → "¿Hay algo más, por pequeño que sea?" → Si ya fue registrado en 2.3 → NO duplicar
+2.4 → "¿Hay algo más que lleve, por pequeño que sea? Pegamento, pintura, tornillos, etiquetas..." → Si ya fue registrado en 2.3 → NO duplicar
 2.5 → Embalaje y presentación — TODO JUNTO, UNA SOLA VEZ: "¿Qué usás para empacar, presentar y enviar? Cajas, bolsas, papel, etiquetas, cinta — todo junto" → Registrar como UN solo concepto. ⚠️ NO volver a preguntar embalaje en ningún otro bloque.
 2.6 → Tiempo de producción por unidad (horas)
 2.7 → ¿Quién pone el tiempo? → Si sabe valor hora → registrar. Si NO sabe → "Lo calculamos al final" → valor_hora = 0. NO insistir.
@@ -1205,7 +1205,13 @@ CHECKPOINT BLOQUE 2: Verificar que NO hay ítems duplicados. Mostrar avance: "Ha
 3.5 → Software y suscripciones (listar todos juntos)
 3.6 → Otros fijos: seguros, gestoría, contador, membresías
 3.7 → Publicidad: ¿es fija o variable? → Si fija → registrar acá. Si variable → guardar para Bloque 4. NO duplicar.
-3.8 → Impuestos fijos: cuota autónomo / monotributo
+3.8 → Impuestos fijos: Adaptar la pregunta según el país del emprendedor (ya lo sabés del Bloque 1):
+  - España: "¿Pagás cuota de autónomo? ¿Cuánto te sale al mes?"
+  - Argentina: "¿Estás en monotributo o responsable inscripto? ¿Cuánto pagás de cuota?"
+  - México: "¿Pagás alguna cuota fija al SAT o régimen simplificado?"
+  - Colombia: "¿Tenés algún impuesto fijo mensual, como el régimen simple?"
+  - Otros países: "¿Pagás algún impuesto fijo mensual?"
+  NUNCA mezclar términos de distintos países (no decir "autónomo o monotributo" a un español).
 3.9 → Impuestos sobre facturación: % IVA/IRPF. Si no sabe → estimado por país + disclaimer "Es una aproximación orientativa — confirmalo con tu contador o asesor fiscal."
 
 Estimados por país: España ~20% (IVA neto + IRPF), Argentina monotributo fijo / RI ~35%, México ~16% IVA + ~30% ISR, Chile ~19% IVA + ~25% renta.
@@ -1213,15 +1219,14 @@ Estimados por país: España ~20% (IVA neto + IRPF), Argentina monotributo fijo 
 CHECKPOINT BLOQUE 3: Sumar total fijos. Dividir entre unidades/mes. Mostrar: "Tus gastos fijos son €X/mes. Por unidad: €Y"
 
 ### BLOQUE 4 — COSTOS VARIABLES POR VENTA (en este orden)
-4.1 → ENVÍO — ⚠️ OBLIGATORIO hacer TODAS estas preguntas:
+4.1 → ENVÍO — ⚠️ OBLIGATORIO hacer TODAS estas preguntas en este orden:
   a) ¿Enviás al cliente?
-  b) ¿El envío lo pagás vos o lo paga el cliente?
-  c) Si lo pagás vos: ¿Está incluido en el precio de venta o lo cobrás aparte?
-     → Incluido en el precio → ES costo variable, se suma
-     → El cliente paga aparte → NO es costo, no se suma
+  b) ¿Cuánto te cuesta cada envío?
+  c) ¿Ese costo está incluido en tu precio de venta, o se lo cobrás aparte al cliente?
+     → Incluido en el precio → ES costo variable, se suma al análisis
+     → Se cobra aparte al cliente → NO es costo, no se suma
      → Subsidia parte → calcular la diferencia como costo
-  d) ¿Cuánto cuesta por paquete?
-4.2 → Comisiones de plataformas: ¿vendés por alguna plataforma? ¿qué comisión cobra?
+4.2 → Comisiones de plataformas: Si el emprendedor ya mencionó una plataforma como gasto fijo (ej: Shopify, Etsy), CONECTAR: "Mencionaste que usás [plataforma]. Además de la suscripción, [plataforma] cobra un X% por cada venta. ¿Vendés también por alguna otra plataforma — Amazon, Etsy, Mercado Libre?" NO volver a preguntar por la plataforma que ya nombró.
 4.3 → Medios de pago: ¿aceptás tarjeta/PayPal/digital? ¿comisión? (si no sabe: Stripe ~2.9%, MercadoPago ~3.5-5.5%, PayPal ~3.5%)
 4.4 → Publicidad variable (SOLO si en 3.7 dijo que es variable): ¿cuánto por mes? → dividir entre unidades
 4.5 → Devoluciones: ¿con qué frecuencia? (1 de cada X)
@@ -1258,22 +1263,17 @@ Cuando tengas TODOS los datos de los 5 bloques, terminá tu mensaje con:
 [RESULTADOS_LISTOS]
 
 FORMATO PRODUCTO ÚNICO:
-{"modo":"single","negocio":"nombre","producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_elegido":30,"margen_actual_pct":0,"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes":0,"moneda":"€","tiempo_horas":0,"valor_hora":0,"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","desglose":[{"concepto":"nombre","valor":0}],"consejo_principal":"consejo","problema_detectado":"problema"}
+{"modo":"single","negocio":"nombre","producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_elegido":30,"margen_actual_pct":0,"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes":0,"moneda":"€","tiempo_horas":0,"valor_hora":0,"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","desglose":[{"concepto":"nombre","valor":0}],"consejo_cualitativo":"consejo sin numeros","problema_detectado":"problema"}
 
 FORMATO MULTI-PRODUCTO:
-{"modo":"multi","negocio":"nombre","moneda":"€","margen_elegido":30,"productos":[{"producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_actual_pct":0,"ganancia_unidad":0,"unidades_mes":0,"tiempo_horas":0,"valor_hora":0,"desglose":[{"concepto":"nombre","valor":0}]}],"consolidado":{"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes_total":0,"costo_fijo_mensual_total":0},"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","consejo_principal":"consejo","problema_detectado":"problema"}
+{"modo":"multi","negocio":"nombre","moneda":"€","margen_elegido":30,"productos":[{"producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_actual_pct":0,"ganancia_unidad":0,"unidades_mes":0,"tiempo_horas":0,"valor_hora":0,"desglose":[{"concepto":"nombre","valor":0}]}],"consolidado":{"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes_total":0,"costo_fijo_mensual_total":0},"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","consejo_cualitativo":"consejo sin numeros","problema_detectado":"problema"}
 
 REGLAS DEL JSON:
 - modo: "single" si es un solo producto, "multi" si son varios
 - precio_recomendado SIEMPRE = costo_total / (1 - margen_elegido/100). VERIFICAR antes de generar.
 - costo_total SIEMPRE = suma exacta de todos los ítems del desglose. VERIFICAR.
 - En multi-producto: costo_fijo_unit se calcula dividiendo los fijos totales entre TODAS las unidades de todos los productos, NO entre las unidades de un solo producto.
-- consejo_principal: ⚠️ REGLA CRÍTICA — Antes de escribir el consejo, VERIFICAR que cada número mencionado coincida con el JSON:
-  → Si decís "te cuesta X" → X DEBE ser igual a costo_total del JSON
-  → Si decís "ganás/perdés Y por unidad" → Y DEBE ser igual a precio_actual - costo_total
-  → Si decís "perdés Z al mes" → Z DEBE ser igual a (precio_actual - costo_total) × unidades_mes
-  → Si decís "tu hora vale W" → W DEBE ser igual a (precio_actual - costo_total) / tiempo_horas
-  NUNCA inventes cifras. Si un número del consejo no coincide con el JSON, el emprendedor pierde confianza en toda la herramienta.
+- consejo_cualitativo: Consejo personalizado SIN NINGÚN NÚMERO. Solo observaciones cualitativas, sugerencias y estrategias basadas en lo que aprendiste del negocio. NUNCA menciones cifras, porcentajes ni montos — la app muestra los números correctos automáticamente. Ejemplos buenos: "Tu alquiler y cuota de autónomo son los gastos que más pesan por unidad. Podrías considerar trabajar desde casa para reducir fijos." Ejemplos MALOS: "Estás perdiendo €8,76 por unidad" (eso lo muestra la app, no vos).
 - Si valor_hora es 0 (no definido), NO incluyas mano de obra en el desglose NI en el costo_total. NUNCA uses un valor de mercado como sustituto en el desglose — eso lo hace la app automáticamente en la sección "Tu hora de trabajo". Si incluís mano de obra con valor_hora=0, los números se duplican y el análisis queda mal. Esto es un error grave.
 - desglose: cada concepto UNA sola vez. Sin duplicados.
 - tiempo_horas y valor_hora: si no definió valor hora, valor_hora=0, completar mercado bajo/medio/alto según rubro+país.
@@ -1613,7 +1613,7 @@ function showResults(data) {
           <div class="metric-card success-border"><div class="metric-label">Ganancia anual proyectada</div><div class="metric-value" style="color:var(--success)">${c}${fmt(ganAnual)}</div><div class="metric-desc">Si mantenés el volumen actual</div></div>
         </div>
       </div>
-      ${data.consejo_principal ? `<div class="advice-card"><div class="advice-title">💡 Consejo para tu negocio</div><div class="advice-text">${data.consejo_principal}</div></div>` : ''}
+      ${data.consejo_cualitativo ? `<div class="advice-card"><div class="advice-title">💡 Consejo para tu negocio</div><div class="advice-text">${data.consejo_cualitativo}</div></div>` : ''}
       <div class="philosophy-card"><div class="philosophy-title">Precio, costo y valor percibido</div><div class="philosophy-text">El precio mínimo es tu piso — por debajo de ese número cada venta te cuesta dinero.<br><br><em>Los costos te dicen hasta dónde podés bajar. El mercado te dice hasta dónde podés subir. Tu trabajo es encontrar ese punto.</em></div></div>
       <div class="results-actions"><button class="btn-primary" onclick="continueChat()">Continuar conversación →</button></div>`;
 
@@ -1672,7 +1672,16 @@ function showResults(data) {
         <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
           <div class="metric-card success-border"><div class="metric-label">Ganancia mensual</div><div class="metric-value" style="color:var(--success)">${c}${fmt(ganMesRec)}</div><div class="metric-desc">Con ${data.unidades_mes} unidades/mes</div></div>
           <div class="metric-card success-border"><div class="metric-label">Ganancia anual proyectada</div><div class="metric-value" style="color:var(--success)">${c}${fmt(ganAnualRec)}</div><div class="metric-desc">Si mantenés el volumen actual</div></div></div></div>
-      ${data.consejo_principal?`<div class="advice-card"><div class="advice-title">💡 Consejo para tu negocio</div><div class="advice-text">${data.consejo_principal}</div></div>`:''}
+      <div class="advice-card" style="border-left-color: var(--accent);">
+        <div class="advice-title" style="color: var(--accent);">📊 Diagnóstico numérico</div>
+        <div class="advice-text" style="font-size:14px; line-height:1.6;">
+          Tu costo real por unidad es <strong>${c}${fmt(costoTotal)}</strong>. A tu precio actual de <strong>${c}${fmt(data.precio_actual)}</strong>, 
+          ${gan < 0 ? `perdés <strong style="color:var(--danger)">${c}${fmt(Math.abs(gan))}</strong> por cada venta` : `ganás <strong style="color:var(--success)">${c}${fmt(gan)}</strong> por unidad`}. 
+          ${gan < 0 ? `Eso son <strong style="color:var(--danger)">${c}${fmt(Math.abs(gan * data.unidades_mes))}</strong> de pérdida mensual con ${data.unidades_mes} unidades.` : `Eso son <strong>${c}${fmt(gan * data.unidades_mes)}</strong> de ganancia mensual con ${data.unidades_mes} unidades.`}
+          Para un margen del ${data.margen_elegido || 30}%, tu precio debería ser <strong style="color:var(--success)">${c}${fmt(precRecVerificado)}</strong>.
+        </div>
+      </div>
+      ${data.consejo_cualitativo?`<div class="advice-card"><div class="advice-title">💡 Consejo para tu negocio</div><div class="advice-text">${data.consejo_cualitativo}</div></div>`:''}
       ${mostrarHoras?`<div class="advice-card" style="border-left-color:var(--warn);"><div class="advice-title" style="color:var(--warn);">⏱️ Tu hora de trabajo</div><div class="advice-text">Notamos que no definiste un valor para tu hora de trabajo — la mayoría de los emprendedores no lo calcula. Pero es uno de los datos que más cambia tu margen real.<br><br><strong>Con tu precio actual de ${c}${fmt(data.precio_actual)} y ${data.tiempo_horas} horas por unidad, tu hora te está dejando ${c}${fmt(horaCalc)}.</strong>${horaCalc<0?' Estás pagando por trabajar.':horaCalc<hBajo?' Está por debajo del mínimo de mercado.':''}<br><br>Para que tu hora valga lo que cobran ${rubroRef}:<div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;padding:12px;background:var(--surface2);border-radius:var(--radius-sm);"><div style="display:flex;justify-content:space-between;"><span>Tarifa baja — ${c}${fmt(hBajo)}/h</span><strong>Precio: ${c}${fmt(pBajo)}</strong></div><div style="display:flex;justify-content:space-between;"><span>Tarifa media — ${c}${fmt(hMedio)}/h</span><strong>Precio: ${c}${fmt(pMedio)}</strong></div><div style="display:flex;justify-content:space-between;"><span>Tarifa premium — ${c}${fmt(hAlto)}/h</span><strong>Precio: ${c}${fmt(pAlto)}</strong></div></div></div></div>`:``}
       <div class="philosophy-card"><div class="philosophy-title">Precio, costo y valor percibido</div><div class="philosophy-text">El precio mínimo es tu piso — por debajo de ese número cada venta te cuesta dinero.<br><br><em>Los costos te dicen hasta dónde podés bajar. El mercado te dice hasta dónde podés subir. Tu trabajo es encontrar ese punto.</em></div></div>
       <div class="results-actions"><button class="btn-primary" onclick="continueChat()">Continuar conversación →</button></div>`;
