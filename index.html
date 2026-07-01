@@ -1599,7 +1599,7 @@ function showResults(data) {
       const ct = desg.length > 0 ? desg.reduce((s,r) => s + r.valor, 0) : p.costo_total;
       const gan = p.precio_actual - ct;
       const margen = p.precio_actual > 0 ? (gan / p.precio_actual) * 100 : 0;
-      const precRec = ct / (1 - (data.margen_elegido || 30) / 100);
+      const precRec = calcPrecioRec(desg, ct, data.margen_elegido || 30).prec;
       let sClass = 'success', sIcon = '✅', sText = `Margen ${margen.toFixed(1)}%`;
       if (margen < 0) { sClass = 'danger'; sIcon = '🚨'; sText = `Perdés ${c}${fmt(Math.abs(gan))}/ud`; }
       else if (margen < 20) { sClass = 'warn'; sIcon = '⚠️'; sText = `Margen ajustado ${margen.toFixed(1)}%`; }
@@ -1649,11 +1649,12 @@ function showResults(data) {
     const costoTotal = desgloseItems.reduce((s,r) => s+r.valor, 0) || data.costo_total;
     const gan = data.precio_actual - costoTotal;
     const margenReal = data.precio_actual > 0 ? (gan / data.precio_actual) * 100 : 0;
-    const precRecVerificado = costoTotal / (1 - (data.margen_elegido || 30) / 100);
-    const ganRec = precRecVerificado - costoTotal;
-    const ganMesReal = gan * data.unidades_mes;
-    const ganMesRec = ganRec * data.unidades_mes;
-    const ganAnualRec = ganMesRec * 12;
+    const { prec: precRecVerificado, costoReal: costoRealAlRec } = calcPrecioRec(desgloseItems, costoTotal, data.margen_elegido || 30);
+    const { prec: precioMinimo } = calcPrecioRec(desgloseItems, costoTotal, 0);
+    const ganRec = Math.round((precRecVerificado - costoRealAlRec) * 100) / 100;
+    const ganMesReal = Math.round(gan * data.unidades_mes * 100) / 100;
+    const ganMesRec = Math.round(ganRec * data.unidades_mes * 100) / 100;
+    const ganAnualRec = Math.round(ganMesRec * 12 * 100) / 100;
     let statusClass='success',statusIcon='✅',statusTitle='Buen margen',statusSub=`Ganás ${c}${fmt(gan)} por unidad — margen del ${margenReal.toFixed(1)}%`;
     if(margenReal<0){statusClass='danger';statusIcon='🚨';statusTitle='Estás perdiendo dinero';statusSub=`Perdés ${c}${fmt(Math.abs(gan))} por cada unidad que vendés`;}
     else if(margenReal<20){statusClass='warn';statusIcon='⚠️';statusTitle='Margen muy ajustado';statusSub=`Ganás ${c}${fmt(gan)} por unidad — cualquier imprevisto te come la ganancia`;}
@@ -1689,7 +1690,7 @@ function showResults(data) {
           <div class="metric-card" style="grid-column:1/-1;"><div class="metric-label">Ganancia mensual actual</div><div class="metric-value" style="color:${ganMesReal<0?'var(--danger)':'var(--text)'}">${c}${fmt(ganMesReal)}</div><div class="metric-desc">Con ${data.unidades_mes} unidades/mes a tu precio actual</div></div></div></div>
       <div class="results-step"><div class="results-step-label">③ Lo que deberías cobrar</div>
         <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
-          <div class="metric-card danger-border"><div class="metric-label">Precio mínimo</div><div class="metric-value">${c}${fmt(costoTotal)}</div><div class="metric-desc">Tu costo total — por debajo perdés dinero</div></div>
+          <div class="metric-card danger-border"><div class="metric-label">Precio mínimo</div><div class="metric-value">${c}${fmt(precioMinimo)}</div><div class="metric-desc">Punto de equilibrio real — por debajo perdés dinero</div></div>
           <div class="metric-card accent-border"><div class="metric-label">Precio recomendado</div><div class="metric-value" style="color:var(--accent)">${c}${fmt(precRecVerificado)}</div><div class="metric-desc">Con margen del ${data.margen_elegido||30}% — ${(data.margen_elegido||30)===20?'conservador':(data.margen_elegido||30)===40?'ambicioso':'recomendado'}</div></div></div>
         <div class="results-gap-note">${data.precio_actual<precRecVerificado?`<span class="gap-warn">⬆️ Diferencia con tu precio actual: ${c}${fmt(precRecVerificado-data.precio_actual)} por unidad</span>`:`<span class="gap-ok">✅ Tu precio actual ya está por encima del recomendado</span>`}</div></div>
       <div class="results-step"><div class="results-step-label">④ Qué ganarías al precio recomendado</div>
@@ -1717,6 +1718,26 @@ function showResults(data) {
 function fmt(n) {
   if (n == null) return '—';
   return Number(n).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Resuelve la dependencia circular de costos que son % del precio (impuestos, comisiones)
+// P = costosFijos / (1 - pct_costos - margen)
+function calcPrecioRec(desgloseItems, costoTotal, margenPct) {
+  const margenDec = margenPct / 100;
+  let totalPct = 0, costosFijos = 0;
+  (desgloseItems || []).forEach(item => {
+    const m = item.concepto.match(/(\d+(?:\.\d+)?)\s*%/);
+    if (m) totalPct += parseFloat(m[1]) / 100;
+    else costosFijos += item.valor;
+  });
+  const den = 1 - totalPct - margenDec;
+  if (totalPct > 0 && den > 0.05) {
+    const prec = Math.round((costosFijos / den) * 100) / 100;
+    const costoReal = Math.round((costosFijos + totalPct * prec) * 100) / 100;
+    return { prec, costoReal };
+  }
+  const prec = Math.round((costoTotal / (1 - margenDec)) * 100) / 100;
+  return { prec, costoReal: costoTotal };
 }
 
 window.continueChat = function() {
@@ -1749,7 +1770,8 @@ window.continueChat = function() {
         const ct = p.desglose ? p.desglose.filter(r=>r.valor>0).reduce((s,r)=>s+r.valor,0) : p.costo_total;
         const g = p.precio_actual - ct;
         const m = p.precio_actual > 0 ? (g/p.precio_actual*100) : 0;
-        const precRec = ct / (1 - (d.margen_elegido||30)/100);
+        const desgM = p.desglose ? p.desglose.filter(r=>r.valor>0) : [];
+        const precRec = calcPrecioRec(desgM, ct, d.margen_elegido||30).prec;
         const sColor = m < 0 ? '#dc2626' : m < 20 ? '#d97706' : '#059669';
         return `
           <div style="padding:10px 14px;border-bottom:1px solid #e4e7ec;">
@@ -1776,7 +1798,7 @@ window.continueChat = function() {
       const ct = desg.length > 0 ? desg.reduce((s,r)=>s+r.valor,0) : d.costo_total;
       const g = d.precio_actual - ct;
       const m = d.precio_actual > 0 ? (g/d.precio_actual*100) : 0;
-      const precRec = ct / (1 - (d.margen_elegido||30)/100);
+      const precRec = calcPrecioRec(desg, ct, d.margen_elegido||30).prec;
       let sColor='#059669',sBg='#ecfdf5',sIcon='✅',sText=`Margen ${m.toFixed(1)}%`;
       if(m<0){sColor='#dc2626';sBg='#fef2f2';sIcon='🚨';sText=`Perdés ${c}${fmt(Math.abs(g))}/ud`;}
       else if(m<20){sColor='#d97706';sBg='#fffbeb';sIcon='⚠️';sText=`Margen ajustado ${m.toFixed(1)}%`;}
