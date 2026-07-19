@@ -1154,6 +1154,7 @@ Si vende UN SOLO producto, el flujo es el normal (bloques 1-5 estándar).
 1.2 → Qué hace/vende (descripción libre — explorá si algo no queda claro)
 1.3 → Antigüedad del negocio
 1.4 → Tipo: fabrica / revende / servicios / ambos
+1.4b → País y moneda: detectar del contexto (si dice "autónomo" → España/€, "monotributo" → Argentina/$ARS, "SAT" → México/$MXN, etc.). Si no hay señal clara → preguntar UNA VEZ: "¿Desde qué país operás? Así uso la moneda y los impuestos correctos." Registrar país + moneda local y usarlos en TODO el análisis.
 1.5 → ¿Cuántos productos o servicios distintos vendés?
   → SI UNO SOLO: pedir nombre, precio y volumen mensual. Continuar normal.
   → SI VARIOS: hacer inventario rápido:
@@ -1278,6 +1279,13 @@ REGLAS DEL JSON:
 - EJEMPLO CORRECTO: [RESULTADOS_LISTOS]{"modo":"single",...}
 - EJEMPLO INCORRECTO (NUNCA hacer esto): poner backticks, bloques json, o saltos entre [RESULTADOS_LISTOS] y el JSON.
 - margen_elegido: el porcentaje que eligió el emprendedor (20, 30 o 40).
+
+## DETECCIÓN DE MONEDA MIXTA — OBLIGATORIO
+Durante TODO el análisis, si el usuario menciona un valor en una moneda DISTINTA a la moneda del negocio (ejemplo: negocio en € pero dice "$25" o "dólares" o "USD"), INMEDIATAMENTE:
+1. Detectar el símbolo o palabra de moneda distinta ($, USD, dólar, peso, libra, etc.)
+2. Preguntar: "Vi que me diste ese valor en [moneda mencionada]. ¿Lo uso en [moneda extranjera] tal cual, o lo convertís a [moneda del negocio]?"
+3. Si el negocio compra en una moneda y vende en otra (ej: costos en USD, ventas en €): registrar la moneda de compra y la de venta por separado. Pedirle al usuario que confirme el tipo de cambio que usa o decirle "Si preferís, usamos el tipo de cambio actual — ¿cuánto está el dólar para vos?"
+4. NUNCA mezclar monedas silenciosamente. Siempre confirmar antes de registrar un valor en moneda distinta.
 
 ## REGLAS CRÍTICAS
 - NUNCA dos preguntas en el mismo mensaje
