@@ -1234,12 +1234,8 @@ CHECKPOINT BLOQUE 3: Sumar total fijos. Dividir entre unidades/mes. Mostrar: "Tu
 CHECKPOINT BLOQUE 4: Sumar variables por venta. Mostrar: "Cada venta te cuesta €X adicional"
 
 ### BLOQUE 5 — DIAGNÓSTICO Y PRICING
-5.1 → Preguntar qué margen desea: "¿Qué margen de ganancia querés tener?"
-  - 20% — Conservador: cubrís imprevistos y mantenés el negocio
-  - 30% — Recomendado: te da margen para crecer y reinvertir
-  - 40% — Ambicioso: para escalar y posicionarte premium
-5.2 → precio_recomendado: siempre 0 — la app lo recalcula automáticamente con la fórmula correcta desde el desglose
-  ⚠️ OBLIGATORIO usar la fórmula exacta. No inventar otro porcentaje.
+5.1 → Preguntar qué margen desea de forma conversacional y natural, sin mostrar listas numeradas ni con letras. Explicar brevemente qué significa cada opción y dejar que el usuario elija con sus palabras. Las tres opciones disponibles son 20% (conservador), 30% (recomendado) y 40% (ambicioso). Si el usuario no sabe, sugerí el 30% como punto de partida.
+5.2 → precio_recomendado: siempre 0 en el JSON — la app lo calcula sola con calcPrecioRec() desde el desglose. NO lo calcules vos.
 5.3 → Generar JSON y mostrar resultados
 
 ## ═══════════════════════════════════════
@@ -1622,8 +1618,17 @@ function showResults(data) {
         </div>`;
     });
 
-    const ganMes = con.ganancia_mensual || 0;
-    const ganAnual = con.ganancia_anual || ganMes * 12;
+    // Calcular consolidado desde los productos (no confiar en los valores del AI)
+    let ganMesTot = 0, unidadesTot = 0;
+    data.productos.forEach(p => {
+      const desgP = p.desglose && p.desglose.length > 0 ? p.desglose.filter(r => r.valor > 0) : [];
+      const ctP = desgP.length > 0 ? desgP.reduce((s,r) => s + r.valor, 0) : p.costo_total;
+      const ganP = p.precio_actual - ctP;
+      ganMesTot += Math.round(ganP * (p.unidades_mes || 0) * 100) / 100;
+      unidadesTot += p.unidades_mes || 0;
+    });
+    const ganMes = Math.round(ganMesTot * 100) / 100;
+    const ganAnual = Math.round(ganMes * 12 * 100) / 100;
 
     body.innerHTML = `
       <div class="results-title-section">
@@ -1634,7 +1639,7 @@ function showResults(data) {
       <div class="results-step">
         <div class="results-step-label">📊 Consolidado</div>
         <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
-          <div class="metric-card success-border"><div class="metric-label">Ganancia mensual total</div><div class="metric-value" style="color:var(--success)">${c}${fmt(ganMes)}</div><div class="metric-desc">Con ${con.unidades_mes_total || '—'} unidades/mes</div></div>
+          <div class="metric-card success-border"><div class="metric-label">Ganancia mensual total</div><div class="metric-value" style="color:${ganMes<0?'var(--danger)':'var(--success)'};">${c}${fmt(ganMes)}</div><div class="metric-desc">Con ${unidadesTot || '—'} unidades/mes</div></div>
           <div class="metric-card success-border"><div class="metric-label">Ganancia anual proyectada</div><div class="metric-value" style="color:var(--success)">${c}${fmt(ganAnual)}</div><div class="metric-desc">Si mantenés el volumen actual</div></div>
         </div>
       </div>
