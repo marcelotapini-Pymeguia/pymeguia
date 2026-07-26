@@ -1235,7 +1235,7 @@ CHECKPOINT BLOQUE 3: Sumar total fijos. Dividir entre unidades/mes. Mostrar: "Tu
 CHECKPOINT BLOQUE 4: Sumar variables por venta. Mostrar: "Cada venta te cuesta €X adicional"
 
 ### BLOQUE 5 — DIAGNÓSTICO Y PRICING
-5.1 → Preguntar qué margen desea de forma conversacional y natural, sin mostrar listas numeradas ni con letras. Explicar brevemente qué significa cada opción y dejar que el usuario elija con sus palabras. Las tres opciones disponibles son 20% (conservador), 30% (recomendado) y 40% (ambicioso). Si el usuario no sabe, sugerí el 30% como punto de partida.
+5.1 → Preguntar qué margen desea de forma conversacional y natural, en un párrafo corrido de prosa. PROHIBIDO usar viñetas, guiones, numeración, letras o saltos de línea entre las opciones — ni una lista con "-" ni con "1.2.3." ni nada que separe visualmente cada opción en su propia línea. Mencioná las tres opciones (20% conservador, 30% recomendado, 40% ambicioso) dentro del mismo texto fluido, como lo diría un consultor hablando, y dejá que el usuario elija con sus palabras. Si el usuario no sabe, sugerí el 30% como punto de partida.
 5.2 → precio_recomendado: siempre 0 en el JSON — la app lo calcula sola con calcPrecioRec() desde el desglose. NO lo calcules vos.
 5.3 → Generar JSON y mostrar resultados
 
@@ -1245,10 +1245,11 @@ CHECKPOINT BLOQUE 4: Sumar variables por venta. Mostrar: "Cada venta te cuesta �
 
 REGLA 1: Antes de registrar un costo, verificar si ya existe uno similar. Si existe, NO crear línea nueva.
 REGLA 2: El embalaje se pregunta UNA VEZ en el punto 2.5. Si el emprendedor lo menciona después, se actualiza el 2.5, no se crea línea nueva.
-REGLA 3: La publicidad es FIJA (Bloque 3) o VARIABLE (Bloque 4), nunca en los dos.
+REGLA 3: La publicidad es FIJA (Bloque 3), VARIABLE (Bloque 4) u OCASIONAL (ver REGLA 7), nunca en más de una categoría.
 REGLA 4: El envío es costo SOLO si lo paga el emprendedor y está incluido en el precio. Si el cliente lo paga aparte, NO se cuenta.
 REGLA 5: Al generar el JSON, cada concepto aparece UNA sola vez. Revisar antes de generar.
 REGLA 6: Si el emprendedor menciona un costo fuera de su bloque, clasificarlo correctamente e incorporarlo sin drama.
+REGLA 7 — GASTOS OCASIONALES SIN FRECUENCIA DEFINIDA: si un gasto (publicidad, herramientas, lo que sea) NO es mensual fijo ni recurrente por venta, sino algo que el emprendedor hace "de vez en cuando" o "cuando puede" SIN una frecuencia clara (ej: "gasto €15 ocasionalmente, no es fijo"), NO lo prorratees entre las unidades ni lo incluyas en el desglose de costo por unidad. Es un costo hundido/puntual, no afecta el cálculo de precio. Confirmá esto con el emprendedor: "Como no es un gasto fijo ni regular, no lo sumo al costo por unidad — no afecta tu precio." Si el emprendedor aclara una frecuencia concreta (ej: "una vez por trimestre" o "€X cada 2 meses"), ahí sí se puede prorratear dividiendo por el período correspondiente.
 
 ## MANEJO DE RESPUESTAS VAGAS — 3 NIVELES
 Nivel 1: Meses reales ("¿Recordás cuánto vendiste en ${prev3[0]}, ${prev3[1]} y ${prev3[2]}?")
@@ -1779,7 +1780,6 @@ window.continueChat = function() {
 
     let cardContent = '';
     if (d.modo === 'multi' && d.productos) {
-      const con = d.consolidado || {};
       let prodRows = d.productos.map(p => {
         const ct = p.desglose ? p.desglose.filter(r=>r.valor>0).reduce((s,r)=>s+r.valor,0) : p.costo_total;
         const g = p.precio_actual - ct;
@@ -1798,8 +1798,13 @@ window.continueChat = function() {
             </div>
           </div>`;
       }).join('');
-      const ganMes = con.ganancia_mensual || 0;
-      const ganAnual = con.ganancia_anual || ganMes * 12;
+      let ganMesTot = 0;
+      d.productos.forEach(p => {
+        const ctP = p.desglose && p.desglose.length > 0 ? p.desglose.filter(r => r.valor > 0).reduce((s,r) => s + r.valor, 0) : p.costo_total;
+        ganMesTot += Math.round((p.precio_actual - ctP) * (p.unidades_mes || 0) * 100) / 100;
+      });
+      const ganMes = Math.round(ganMesTot * 100) / 100;
+      const ganAnual = Math.round(ganMes * 12 * 100) / 100;
       cardContent = `
         <div style="background:#1F4E79;color:white;padding:10px 14px;font-size:13px;font-weight:600;">📊 ${d.negocio} — ${d.productos.length} productos</div>
         ${prodRows}
