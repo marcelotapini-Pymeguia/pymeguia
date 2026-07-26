@@ -1818,6 +1818,7 @@ window.continueChat = function() {
       const g = d.precio_actual - ct;
       const m = d.precio_actual > 0 ? (g/d.precio_actual*100) : 0;
       const precRec = calcPrecioRec(desg, ct, d.margen_elegido||30).prec;
+      const precMin = calcPrecioRec(desg, ct, 0).prec;
       let sColor='#059669',sBg='#ecfdf5',sIcon='✅',sText=`Margen ${m.toFixed(1)}%`;
       if(m<0){sColor='#dc2626';sBg='#fef2f2';sIcon='🚨';sText=`Perdés ${c}${fmt(Math.abs(g))}/ud`;}
       else if(m<20){sColor='#d97706';sBg='#fffbeb';sIcon='⚠️';sText=`Margen ajustado ${m.toFixed(1)}%`;}
@@ -1829,7 +1830,7 @@ window.continueChat = function() {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#e4e7ec;">
           <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Costo total</div><div style="font-size:17px;font-weight:700;color:#2563eb;">${c}${fmt(ct)}</div></div>
           <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Precio actual</div><div style="font-size:17px;font-weight:700;">${c}${fmt(d.precio_actual)}</div></div>
-          <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Precio mínimo</div><div style="font-size:17px;font-weight:700;color:#dc2626;">${c}${fmt(ct)}</div></div>
+          <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Precio mínimo</div><div style="font-size:17px;font-weight:700;color:#dc2626;">${c}${fmt(precMin)}</div></div>
           <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Recomendado</div><div style="font-size:17px;font-weight:700;color:#059669;">${c}${fmt(precRec)}</div></div>
         </div>
         <div style="padding:4px 0;">${desgRows}</div>
