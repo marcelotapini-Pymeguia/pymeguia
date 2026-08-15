@@ -3,1858 +3,463 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PymeGuía — Tu CFO en el bolsillo</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>PymeGuía — Tu negocio, en orden.</title>
+<meta name="description" content="PymeGuía calcula lo que realmente te cuesta cada venta y te dice a qué precio deberías vender. Sin planillas, sin contador.">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="PymeGuía — Tu negocio, en orden.">
+<meta property="og:description" content="PymeGuía calcula lo que realmente te cuesta cada venta y te dice a qué precio deberías vender. Sin planillas, sin contador.">
+<meta property="og:image" content="og-image.svg">
+<meta property="og:url" content="/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PymeGuía — Tu negocio, en orden.">
+<meta name="twitter:description" content="PymeGuía calcula lo que realmente te cuesta cada venta y te dice a qué precio deberías vender. Sin planillas, sin contador.">
+<meta name="twitter:image" content="og-image.svg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
 <style>
   :root {
-    --bg: #f7f8fa;
-    --surface: #ffffff;
-    --surface2: #f0f2f5;
-    --border: #e4e7ec;
-    --accent: #2563eb;
-    --accent-light: #eff6ff;
-    --accent2: #0891b2;
-    --success: #059669;
-    --success-light: #ecfdf5;
-    --danger: #dc2626;
-    --danger-light: #fef2f2;
-    --warn: #d97706;
-    --warn-light: #fffbeb;
-    --text: #111827;
-    --text2: #6b7280;
-    --text3: #9ca3af;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 6px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
-    --radius: 14px;
+    --teal-dark: #0F6E56;
+    --teal-mid: #20A17A;
+    --teal-light: #D6F1E6;
+    --amber: #F4A261;
+    --text: #1F2933;
+    --text2: #6B7280;
+    --bg: #F2F4F5;
+    --white: #FFFFFF;
+    --radius: 16px;
     --radius-sm: 10px;
-    --font: 'Inter', sans-serif;
+    --shadow: 0 4px 16px rgba(15,110,86,0.08);
+    --shadow-md: 0 8px 30px rgba(15,110,86,0.12);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  html { scroll-behavior: smooth; }
+
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font);
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  .screen { min-height: 100vh; }
-  .screen.hidden { display: none !important; }
-
-  /* ══════════════════════════════════════
-     LOADING SCREEN
-  ══════════════════════════════════════ */
-  #loading-screen {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-  }
-  .spinner {
-    width: 32px; height: 32px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ══════════════════════════════════════
-     AUTH SCREEN
-  ══════════════════════════════════════ */
-  #auth-screen {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: var(--bg);
-  }
-
-  .auth-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 48px 40px;
-    max-width: 420px;
-    width: 100%;
-    box-shadow: var(--shadow-md);
-    animation: fadeUp 0.4s ease both;
-  }
-
-  .auth-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 32px;
-  }
-  .auth-logo-icon {
-    width: 40px; height: 40px;
-    background: var(--accent);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-  }
-  .auth-logo-text {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.02em;
-  }
-
-  .auth-title {
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 10px;
-    line-height: 1.2;
-  }
-  .auth-sub {
-    font-size: 15px;
-    color: var(--text2);
-    line-height: 1.6;
-    margin-bottom: 32px;
+    font-family: 'Poppins', sans-serif;
     font-weight: 400;
+    color: var(--text);
+    background: var(--white);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+    overflow-x: hidden;
   }
 
-  .btn-google {
-    width: 100%;
+  h1, h2, h3, .headline { font-weight: 600; letter-spacing: -0.01em; }
+
+  a { color: inherit; text-decoration: none; }
+
+  img, svg { max-width: 100%; display: block; }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ===== Header ===== */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #ECEFF1;
+  }
+  .header-inner {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--teal-dark);
+  }
+  .logo-mark {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--teal-dark), var(--teal-mid));
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 14px 20px;
-    font-family: var(--font);
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text);
-    cursor: pointer;
-    transition: all 0.15s;
-    margin-bottom: 16px;
-    box-shadow: var(--shadow);
-  }
-  .btn-google:hover {
-    background: var(--surface2);
-    border-color: #d1d5db;
-    box-shadow: var(--shadow-md);
-  }
-  .btn-google svg { width: 20px; height: 20px; }
-
-  .api-section-auth {
-    margin-top: 24px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
-  }
-  .api-label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 8px;
-  }
-  .api-input {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    font-family: var(--font);
-    font-size: 14px;
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s;
-    margin-bottom: 8px;
-  }
-  .api-input:focus { border-color: var(--accent); background: white; }
-  .api-input::placeholder { color: var(--text3); }
-  .api-hint {
-    font-size: 12px;
-    color: var(--text3);
-    line-height: 1.5;
-  }
-  .api-hint a { color: var(--accent); text-decoration: none; }
-
-  .auth-features {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 32px;
-  }
-  .auth-feature {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    color: var(--text2);
-  }
-  .auth-feature-icon {
-    width: 28px; height: 28px;
-    background: var(--accent-light);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-    flex-shrink: 0;
-  }
-
-  /* ══════════════════════════════════════
-     MAIN APP
-  ══════════════════════════════════════ */
-  #app-screen {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    background: var(--bg);
-  }
-
-  /* Header */
-  .app-header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .header-logo {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--accent);
-    letter-spacing: -0.02em;
-  }
-  .header-center {
-    flex: 1;
-    max-width: 260px;
-    margin: 0 auto;
-  }
-  .progress-bar {
-    height: 3px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 2px;
-    transition: width 0.5s ease;
-    width: 0%;
-  }
-  .progress-text {
-    font-size: 11px;
-    color: var(--text3);
-    text-align: center;
-    margin-top: 4px;
-    font-weight: 500;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
     gap: 8px;
-  }
-  .user-avatar {
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1.5px solid var(--border);
-  }
-  .user-avatar-placeholder {
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    background: var(--accent-light);
-    border: 1.5px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-    color: var(--accent);
+    font-family: 'Poppins', sans-serif;
     font-weight: 600;
-  }
-  .btn-menu {
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 5px 10px;
-    font-size: 12px;
-    color: var(--text2);
-    cursor: pointer;
-    font-family: var(--font);
-    transition: all 0.15s;
-  }
-  .btn-menu:hover { background: var(--surface2); }
-
-  /* Chat */
-  .chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    scroll-behavior: smooth;
-  }
-  .chat-messages::-webkit-scrollbar { width: 3px; }
-  .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  .msg-wrap {
-    display: flex;
-    gap: 10px;
-    max-width: 680px;
-    animation: msgIn 0.25s ease both;
-  }
-  .msg-wrap.user {
-    flex-direction: row-reverse;
-    margin-left: auto;
-  }
-
-  @keyframes msgIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .msg-avatar {
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  .msg-avatar.ai {
-    background: var(--accent);
-    color: white;
-    font-weight: 600;
-    font-size: 11px;
-  }
-  .msg-avatar.user {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-  }
-
-  .msg-bubble {
-    padding: 12px 16px;
-    border-radius: 16px;
     font-size: 15px;
-    line-height: 1.6;
-    max-width: calc(100% - 44px);
-  }
-  .msg-wrap.ai .msg-bubble {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-top-left-radius: 4px;
-    color: var(--text);
-    box-shadow: var(--shadow);
-  }
-  .msg-wrap.user .msg-bubble {
-    background: var(--accent);
-    color: white;
-    border-top-right-radius: 4px;
-  }
-
-  /* Typing */
-  .typing-dots {
-    display: flex;
-    gap: 4px;
-    padding: 4px 2px;
-    align-items: center;
-  }
-  .typing-dots span {
-    width: 6px; height: 6px;
-    background: var(--text3);
-    border-radius: 50%;
-    animation: bounce 1.2s infinite;
-  }
-  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
-  .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
-  @keyframes bounce {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-    30% { transform: translateY(-5px); opacity: 1; }
-  }
-
-  /* Error message */
-  .msg-error {
-    background: var(--danger-light) !important;
-    border-color: #fca5a5 !important;
-    color: var(--danger) !important;
-    font-size: 14px !important;
-  }
-
-  /* Input */
-  .chat-input-area {
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    padding: 14px 20px 20px;
-  }
-  .chat-input-row {
-    display: flex;
-    gap: 8px;
-    align-items: flex-end;
-    max-width: 680px;
-    margin: 0 auto;
-  }
-  .chat-textarea {
-    flex: 1;
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    color: var(--text);
-    font-family: var(--font);
-    font-size: 15px;
-    outline: none;
-    resize: none;
-    min-height: 48px;
-    max-height: 120px;
-    transition: border-color 0.15s, background 0.15s;
-    line-height: 1.5;
-  }
-  .chat-textarea:focus {
-    border-color: var(--accent);
-    background: white;
-  }
-  .chat-textarea::placeholder { color: var(--text3); }
-
-  .btn-voice {
-    width: 48px; height: 48px;
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: all 0.15s;
-    color: var(--text2);
-  }
-  .btn-voice:hover { background: var(--border); color: var(--text); }
-  .btn-voice.recording {
-    background: #fee2e2;
-    border-color: var(--danger);
-    color: var(--danger);
-    animation: pulse 1s infinite;
-  }
-  .btn-voice svg { width: 18px; height: 18px; }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-  }
-
-  .btn-send {
-    width: 48px; height: 48px;
-    background: var(--accent);
+    padding: 13px 26px;
     border: none;
-    border-radius: var(--radius-sm);
     cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: opacity 0.15s, transform 0.1s;
-  }
-  .btn-send:hover { opacity: 0.9; }
-  .btn-send:active { transform: scale(0.96); }
-  .btn-send:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
-  .btn-send svg { width: 18px; height: 18px; fill: white; }
-
-  .input-hint {
-    text-align: center;
-    font-size: 11px;
-    color: var(--text3);
-    margin-top: 8px;
-  }
-
-  /* ══════════════════════════════════════
-     RESULTS SCREEN
-  ══════════════════════════════════════ */
-  #results-screen {
-    background: var(--bg);
-    min-height: 100vh;
-    padding: 0;
-  }
-
-  .results-header-bar {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .results-header-logo {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--accent);
-  }
-
-  .results-body {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 32px 20px 60px;
-  }
-
-  .results-title-section {
-    margin-bottom: 28px;
-    animation: fadeUp 0.4s ease both;
-  }
-  .results-eyebrow {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 6px;
-  }
-  .results-title {
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 4px;
-  }
-  .results-subtitle {
-    font-size: 15px;
-    color: var(--text2);
-  }
-
-  /* Status banner */
-  .status-banner {
-    border-radius: var(--radius);
-    padding: 18px 20px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    animation: fadeUp 0.4s ease 0.05s both;
-  }
-  .status-banner.success { background: var(--success-light); border: 1px solid #a7f3d0; }
-  .status-banner.warn { background: var(--warn-light); border: 1px solid #fde68a; }
-  .status-banner.danger { background: var(--danger-light); border: 1px solid #fca5a5; }
-  .status-icon { font-size: 26px; }
-  .status-text-title {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 2px;
-  }
-  .status-text-sub { font-size: 13px; color: var(--text2); }
-
-  /* Metrics grid */
-  .metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .metric-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px;
-    box-shadow: var(--shadow);
-    animation: fadeUp 0.4s ease both;
-  }
-  .metric-card.accent-border { border-left: 3px solid var(--accent); }
-  .metric-card.success-border { border-left: 3px solid var(--success); }
-  .metric-card.danger-border { border-left: 3px solid var(--danger); }
-  .metric-card.warn-border { border-left: 3px solid var(--warn); }
-
-  .metric-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 8px;
-  }
-  .metric-value {
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 4px;
-    line-height: 1.1;
-  }
-  .metric-desc {
-    font-size: 12px;
-    color: var(--text2);
-    line-height: 1.4;
-  }
-
-  /* Cost table */
-  .section-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin-bottom: 16px;
-    box-shadow: var(--shadow);
-    animation: fadeUp 0.4s ease 0.1s both;
-  }
-  .section-card-header {
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .cost-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 18px;
-    border-bottom: 1px solid var(--border);
-    font-size: 14px;
-  }
-  .cost-row:last-child { border-bottom: none; }
-  .cost-row.total {
-    background: var(--surface2);
-    font-weight: 600;
-  }
-  .cost-label { color: var(--text2); }
-  .cost-value { font-weight: 500; color: var(--text); }
-  .cost-row.total .cost-value { color: var(--accent); font-size: 15px; }
-
-  /* Advice */
-  .advice-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent2);
-    border-radius: var(--radius);
-    padding: 18px 20px;
-    margin-bottom: 16px;
-    box-shadow: var(--shadow);
-    animation: fadeUp 0.4s ease 0.15s both;
-  }
-  .advice-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent2);
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .advice-text {
-    font-size: 14px;
-    color: var(--text);
-    line-height: 1.6;
-  }
-
-  /* Philosophy */
-  .philosophy-card {
-    background: var(--accent-light);
-    border: 1px solid #bfdbfe;
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 28px;
-    animation: fadeUp 0.4s ease 0.2s both;
-  }
-  .philosophy-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent);
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .philosophy-text {
-    font-size: 14px;
-    color: #1e40af;
-    line-height: 1.7;
-  }
-
-  /* Results steps */
-  .results-step {
-    margin-bottom: 24px;
-    animation: fadeUp 0.4s ease both;
-  }
-  .results-step-label {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 10px;
-  }
-  .results-gap-note {
-    margin-top: 10px;
-    padding: 10px 14px;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-weight: 500;
-  }
-  .gap-warn {
-    color: var(--warn);
-    background: var(--warn-light);
-    padding: 8px 14px;
-    border-radius: var(--radius-sm);
-    display: block;
-  }
-  .gap-ok {
-    color: var(--success);
-    background: var(--success-light);
-    padding: 8px 14px;
-    border-radius: var(--radius-sm);
-    display: block;
-  }
-
-  /* Actions */
-  .results-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    animation: fadeUp 0.4s ease 0.25s both;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    white-space: nowrap;
   }
   .btn-primary {
-    background: var(--accent);
+    background: var(--teal-dark);
     color: white;
-    border: none;
-    border-radius: var(--radius-sm);
-    padding: 12px 22px;
-    font-family: var(--font);
-    font-size: 14px;
+    box-shadow: var(--shadow);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); opacity: 0.96; }
+  .btn-header { padding: 10px 18px; font-size: 14px; }
+  .btn-outline {
+    background: transparent;
+    color: var(--teal-dark);
+    border: 1.5px solid var(--teal-light);
+  }
+  .btn-outline:hover { background: var(--teal-light); }
+
+  /* ===== Hero ===== */
+  .hero {
+    padding: 64px 0 56px;
+    background:
+      radial-gradient(120% 100% at 50% 0%, var(--teal-light) 0%, rgba(214,241,230,0) 55%),
+      var(--white);
+    text-align: center;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--teal-light);
+    color: var(--teal-dark);
     font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s;
+    font-size: 13px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    margin-bottom: 24px;
   }
-  .btn-primary:hover { opacity: 0.9; }
-  .btn-secondary {
-    background: var(--surface);
+  .hero h1 {
+    font-size: 34px;
+    line-height: 1.18;
+    max-width: 680px;
+    margin: 0 auto 20px;
+  }
+  .hero .sub {
+    font-size: 17px;
+    color: var(--text2);
+    max-width: 540px;
+    margin: 0 auto 32px;
+  }
+  .hero-ctas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .hero-note { font-size: 13px; color: var(--text2); }
+
+  /* ===== Sections generic ===== */
+  section { padding: 64px 0; }
+  .section-label {
+    display: block;
+    text-align: center;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--teal-mid);
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: 26px;
+    text-align: center;
+    max-width: 620px;
+    margin: 0 auto 44px;
+    line-height: 1.3;
+  }
+
+  /* ===== Problem / María ===== */
+  .problem { background: var(--bg); }
+  .problem-lead {
+    text-align: center;
+    font-size: 18px;
+    max-width: 620px;
+    margin: 0 auto 40px;
     color: var(--text);
-    border: 1px solid var(--border);
+  }
+  .story-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 28px 24px;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  .story-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .story-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--teal-light);
+    color: var(--teal-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .story-head-text .name { font-weight: 600; font-size: 15px; }
+  .story-head-text .biz { font-size: 13px; color: var(--text2); }
+  .story-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .stat {
+    background: var(--bg);
     border-radius: var(--radius-sm);
-    padding: 12px 22px;
-    font-family: var(--font);
+    padding: 14px 8px;
+    text-align: center;
+  }
+  .stat .num {
+    font-weight: 600;
+    font-size: 20px;
+  }
+  .stat.loss .num { color: #C0392B; }
+  .stat .label {
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-top: 4px;
+  }
+  .story-quote {
     font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
+    color: var(--text2);
+    border-top: 1px solid #ECEFF1;
+    padding-top: 16px;
   }
-  .btn-secondary:hover { background: var(--surface2); }
+  .story-quote strong { color: var(--text); }
 
-  /* ── ANIMATIONS ── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
+  /* ===== How it works ===== */
+  .steps {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .step-card {
+    background: var(--white);
+    border: 1px solid #ECEFF1;
+    border-radius: var(--radius);
+    padding: 26px 22px;
+    position: relative;
+  }
+  .step-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--teal-dark);
+    color: white;
+    font-weight: 600;
+    font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .step-card h3 { font-size: 17px; margin-bottom: 8px; }
+  .step-card p { font-size: 14px; color: var(--text2); }
+
+  /* ===== Who it's for ===== */
+  .audience { background: var(--bg); }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    max-width: 640px;
+    margin: 0 auto 28px;
+  }
+  .chip {
+    background: var(--white);
+    border: 1.5px solid var(--teal-light);
+    color: var(--teal-dark);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 999px;
+  }
+  .audience-note {
+    text-align: center;
+    font-size: 15px;
+    color: var(--text2);
+    max-width: 480px;
+    margin: 0 auto;
   }
 
-  /* ── MOBILE ── */
-  @media (max-width: 500px) {
-    .auth-card { padding: 32px 24px; }
-    .metrics-grid { grid-template-columns: 1fr; }
-    .app-header { padding: 10px 14px; }
-    .chat-messages { padding: 16px 14px; }
-    .chat-input-area { padding: 10px 14px 16px; }
-    .results-body { padding: 20px 14px 48px; }
+  /* ===== Final CTA ===== */
+  .cta-final {
+    background: linear-gradient(135deg, var(--teal-dark), var(--teal-mid));
+    text-align: center;
+    color: white;
+    border-radius: var(--radius);
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 52px 24px;
+  }
+  .cta-final h2 { color: white; font-size: 26px; margin-bottom: 12px; }
+  .cta-final p { color: rgba(255,255,255,0.85); font-size: 16px; margin-bottom: 30px; }
+  .cta-final .btn-primary { background: var(--amber); color: var(--text); }
+  .cta-final .btn-primary:hover { opacity: 0.94; }
+
+  /* ===== Footer ===== */
+  footer {
+    padding: 32px 0;
+    text-align: center;
+    color: var(--text2);
+    font-size: 13px;
+  }
+  footer .tagline { color: var(--teal-dark); font-weight: 600; margin-bottom: 4px; }
+
+  /* ===== Desktop ===== */
+  @media (min-width: 700px) {
+    .hero { padding: 96px 0 84px; }
+    .hero h1 { font-size: 48px; }
+    .hero .sub { font-size: 19px; }
+    .hero-ctas { flex-direction: row; justify-content: center; }
+    .section-title { font-size: 32px; }
+    .steps { grid-template-columns: repeat(3, 1fr); }
+    .story-card { padding: 36px 40px; }
+    .cta-final { padding: 72px 40px; }
+    .cta-final h2 { font-size: 32px; }
   }
 </style>
 </head>
 <body>
 
-<!-- LOADING -->
-<div id="loading-screen" class="screen">
-  <div class="spinner"></div>
-</div>
-
-<!-- AUTH -->
-<div id="auth-screen" class="screen hidden">
-  <div class="auth-card">
-    <div class="auth-logo">
-      <div class="auth-logo-icon">📊</div>
-      <div class="auth-logo-text">PymeGuía</div>
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-mark">📊</div>
+      PymeGuía
     </div>
-
-    <h1 class="auth-title">Descubrí si tu precio es correcto</h1>
-    <p class="auth-sub">Una conversación simple con IA que en 15 minutos te muestra la verdad de tus números. Sin saber de finanzas.</p>
-
-    <div class="auth-features">
-      <div class="auth-feature">
-        <div class="auth-feature-icon">💬</div>
-        Solo respondés preguntas — la IA clasifica y calcula
-      </div>
-      <div class="auth-feature">
-        <div class="auth-feature-icon">💾</div>
-        Tu progreso se guarda automáticamente
-      </div>
-      <div class="auth-feature">
-        <div class="auth-feature-icon">📱</div>
-        Funciona desde el celular o la computadora
-      </div>
-    </div>
-
-    <button class="btn-google" onclick="loginWithGoogle()">
-      <svg viewBox="0 0 48 48">
-        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-      </svg>
-      Entrar con Google
-    </button>
-
-    <div class="api-section-auth">
-      <div class="api-label">API Key de Anthropic</div>
-      <input
-        type="password"
-        class="api-input"
-        id="api-key-input"
-        placeholder="sk-ant-..."
-        autocomplete="off"
-      />
-      <div class="api-hint">
-        Obtenés tu key gratis en <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Se guarda en tu cuenta y no tenés que ingresarla de nuevo.
-      </div>
-    </div>
+    <a class="btn btn-primary btn-header" href="/app.html">Probar gratis</a>
   </div>
-</div>
+</header>
 
-<!-- APP CHAT -->
-<div id="app-screen" class="screen hidden" style="display:none;">
-  <div class="app-header">
-    <div class="header-logo">PymeGuía</div>
-    <div class="header-center">
-      <div class="progress-bar">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
-      <div class="progress-text" id="progress-text">Iniciando...</div>
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Tu negocio, en orden.</span>
+    <h1>Sabé si tu precio tiene sentido</h1>
+    <p class="sub">PymeGuía calcula lo que realmente te cuesta cada venta y te dice a qué precio deberías vender. Sin planillas, sin contador.</p>
+    <div class="hero-ctas">
+      <a class="btn btn-primary" href="/app.html">Probar gratis</a>
     </div>
-    <div class="header-right">
-      <div class="user-avatar-placeholder" id="user-initial">?</div>
-      <button class="btn-menu" onclick="showMenu()">···</button>
-    </div>
+    <p class="hero-note" style="margin-top:16px;">15 minutos, sin tarjeta, sin instalar nada.</p>
   </div>
-
-  <div class="chat-messages" id="chat-messages"></div>
-
-  <div class="chat-input-area">
-    <div class="chat-input-row">
-      <textarea
-        class="chat-textarea"
-        id="chat-input"
-        placeholder="Escribí tu respuesta..."
-        rows="1"
-        onkeydown="handleKeyDown(event)"
-        oninput="autoResize(this)"
-      ></textarea>
-      <button class="btn-voice" id="voice-btn" onclick="toggleVoice()" title="Hablar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-          <line x1="12" y1="19" x2="12" y2="23"/>
-          <line x1="8" y1="23" x2="16" y2="23"/>
-        </svg>
-      </button>
-      <button class="btn-send" id="send-btn" onclick="sendMessage()">
-        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-      </button>
-    </div>
-    <div class="input-hint">Enter para enviar · Shift+Enter para nueva línea</div>
-  </div>
-</div>
-
-<!-- RESULTS -->
-<div id="results-screen" class="screen hidden">
-  <div class="results-header-bar">
-    <div class="results-header-logo">PymeGuía</div>
-    <button class="btn-secondary" onclick="showMenu()" style="padding:8px 14px;font-size:13px;">···</button>
-  </div>
-  <div class="results-body" id="results-body"></div>
-</div>
-
-<!-- Firebase + App Logic -->
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-
-// ── Firebase config ──
-const firebaseConfig = {
-  apiKey: "AIzaSyAwEEj-sZiDS9jJeypXbfhG6Ep7eBv10AM",
-  authDomain: "pymeguia-f51ea.firebaseapp.com",
-  projectId: "pymeguia-f51ea",
-  storageBucket: "pymeguia-f51ea.firebasestorage.app",
-  messagingSenderId: "450854478158",
-  appId: "1:450854478158:web:4464cfe290860cb2b67e1f"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
-provider.setCustomParameters({ prompt: 'select_account' });
-
-// ── State ──
-let currentUser = null;
-let apiKey = '';
-let conversationHistory = [];
-let isLoading = false;
-let currentBlock = 1;
-let loginInProgress = false;
-
-// ── Screen management ──
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => {
-    s.classList.add('hidden');
-    s.style.display = 'none';
-  });
-  const el = document.getElementById(id);
-  el.classList.remove('hidden');
-  el.style.display = id === 'app-screen' ? 'flex' : 'block';
-  if (id === 'loading-screen') el.style.display = 'flex';
-  if (id === 'auth-screen') el.style.display = 'flex';
-}
-
-// ── Clear all session data ──
-function clearSession() {
-  conversationHistory = [];
-  apiKey = '';
-  currentBlock = 1;
-  window.lastResultsData = null;
-  const chatEl = document.getElementById('chat-messages');
-  if (chatEl) chatEl.innerHTML = '';
-}
-
-// ── Auth state listener — handles page load and sign out only ──
-onAuthStateChanged(auth, async (user) => {
-  if (loginInProgress) return;
-  if (user) {
-    currentUser = user;
-    clearSession();
-    await loadAndShowUserData();
-  } else {
-    currentUser = null;
-    clearSession();
-    showScreen('auth-screen');
-  }
-});
-
-// ── Load user data from Firestore ──
-async function loadAndShowUserData() {
-  try {
-    const userDocRef = doc(db, 'users', currentUser.uid);
-    const userDoc = await getDoc(userDocRef);
-    if (userDoc.exists()) {
-      const data = userDoc.data();
-      apiKey = data.apiKey || '';
-      if (!apiKey) { showScreen('auth-screen'); return; }
-      if (data.conversationHistory && data.conversationHistory.length > 0) {
-        conversationHistory = data.conversationHistory;
-        currentBlock = data.currentBlock || 1;
-        showScreen('app-screen');
-        setUserAvatar();
-        restoreConversation(conversationHistory);
-        updateProgress(currentBlock);
-      } else {
-        showScreen('app-screen');
-        setUserAvatar();
-        initChat();
-      }
-    } else {
-      showScreen('auth-screen');
-    }
-  } catch(e) {
-    console.error('loadAndShowUserData error:', e);
-    showScreen('auth-screen');
-  }
-}
-
-function setUserAvatar() {
-  const initial = document.getElementById('user-initial');
-  if (!initial || !currentUser) return;
-  const name = currentUser.displayName || currentUser.email || '?';
-  initial.textContent = name.charAt(0).toUpperCase();
-}
-
-// ── Login with Google ──
-window.loginWithGoogle = async function() {
-  const key = document.getElementById('api-key-input').value.trim();
-  if (!key || !key.startsWith('sk-ant-')) {
-    alert('Por favor ingresá una API key válida de Anthropic (empieza con sk-ant-)');
-    return;
-  }
-
-  loginInProgress = true;
-
-  try {
-    const result = await signInWithPopup(auth, provider);
-    currentUser = result.user;
-    clearSession();
-    apiKey = key;
-
-    const userDocRef = doc(db, 'users', currentUser.uid);
-    const existingDoc = await getDoc(userDocRef);
-
-    if (existingDoc.exists()) {
-      // Existing user — only update API key, preserve their conversation
-      await updateDoc(userDocRef, { apiKey: key });
-      const data = existingDoc.data();
-      if (data.conversationHistory && data.conversationHistory.length > 0) {
-        conversationHistory = data.conversationHistory;
-        currentBlock = data.currentBlock || 1;
-        showScreen('app-screen');
-        setUserAvatar();
-        restoreConversation(conversationHistory);
-        updateProgress(currentBlock);
-      } else {
-        showScreen('app-screen');
-        setUserAvatar();
-        initChat();
-      }
-    } else {
-      // New user — create fresh document
-      await setDoc(userDocRef, {
-        email: currentUser.email,
-        name: currentUser.displayName,
-        apiKey: key,
-        createdAt: new Date().toISOString(),
-        conversationHistory: [],
-        currentBlock: 1
-      });
-      showScreen('app-screen');
-      setUserAvatar();
-      initChat();
-    }
-  } catch(e) {
-    if (e.code !== 'auth/popup-closed-by-user') {
-      alert('Error al iniciar sesión: ' + e.message);
-    }
-  } finally {
-    loginInProgress = false;
-  }
-};
-
-// ── Menu ──
-window.showMenu = function() {
-  const choice = confirm('¿Qué querés hacer?\n\nOK = Nueva conversación\nCancelar = Cerrar sesión');
-  if (choice) {
-    window.newConversation();
-  } else {
-    clearSession();
-    signOut(auth).then(() => {
-      showScreen('auth-screen');
-    });
-  }
-};
-
-window.newConversation = function() {
-  const savedKey = apiKey;
-  clearSession();
-  apiKey = savedKey;
-  saveConversation();
-  showScreen('app-screen');
-  initChat();
-};
-
-window.analyzeAnother = function() {
-  window.newConversation();
-};
-
-// ── Save conversation to Firestore ──
-async function saveConversation() {
-  if (!currentUser) return;
-  try {
-    await updateDoc(doc(db, 'users', currentUser.uid), {
-      conversationHistory: conversationHistory,
-      currentBlock: currentBlock,
-      lastActive: new Date().toISOString()
-    });
-  } catch(e) {
-    // Silent fail — don't interrupt UX
-  }
-}
-
-// ── Restore conversation UI ──
-function restoreConversation(history) {
-  const container = document.getElementById('chat-messages');
-  container.innerHTML = '';
-  history.forEach(msg => {
-    if (msg.role === 'user' || msg.role === 'assistant') {
-      addMessage(msg.role === 'assistant' ? 'ai' : 'user', msg.content);
-    }
-  });
-}
-
-// ── System prompt ──
-function buildSystemPrompt() {
-  const now = new Date();
-  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  const cm = months[now.getMonth()];
-  const cy = now.getFullYear();
-  const prev3 = [
-    months[(now.getMonth()-3+12)%12],
-    months[(now.getMonth()-2+12)%12],
-    months[(now.getMonth()-1+12)%12]
-  ];
-
-  return `Sos PymeGuía, una guía financiera conversacional para emprendedores y dueños de pymes hispanohablantes. Tu rol es el de un CFO y analista financiero con 20 años de experiencia asesorando pymes. Hablás con autoridad pero de forma simple y directa.
-
-FECHA ACTUAL: ${cm} de ${cy}
-MESES DE REFERENCIA PARA HISTORIAL: ${prev3[0]}, ${prev3[1]} y ${prev3[2]}
-
-## FOCO Y LÍMITES
-Tu único tema es: finanzas, costos, precios, rentabilidad y gestión económica de negocios.
-Si el usuario pregunta algo fuera de ese ámbito, respondés: "Mi especialidad es la salud financiera de tu negocio. Para eso estoy. ¿Seguimos con el análisis?"
-No des explicaciones adicionales. Solo redirigís y seguís.
-
-## PERSONALIDAD Y TONO
-- Directo, claro, con autoridad de consultor experimentado
-- Comentarios MESURADOS: solo cuando genuinamente aportan valor
-- UNA sola pregunta por mensaje, nunca varias juntas
-- INQUISIDOR: no aceptés respuestas vagas. Si dice "gasto más o menos 500 en insumos", preguntás qué insumos, cuánto de cada uno
-- Tirás del hilo hasta encontrar el último costo oculto
-- Cuando des consejos, usá lenguaje de sugerencia: "podrías considerar", "una opción sería", nunca afirmaciones taxativas
-- Consejos siempre específicos a los datos del negocio, nunca genéricos
-- Todos los números en el consejo deben coincidir con los del análisis
-
-## MEMORIA FLEXIBLE Y CLASIFICACIÓN INTELIGENTE
-El emprendedor puede mencionar un costo en cualquier momento, fuera de su bloque correspondiente. Cuando pase:
-1. Identificá qué tipo de costo es (directo / fijo / variable)
-2. Clasificalo en la categoría correcta internamente
-3. Confirmá: "Perfecto, eso es un gasto fijo — lo sumo a los fijos y recalculo."
-4. Seguí con el bloque actual sin perder el hilo
-Nunca decís que "ya pasó ese bloque". Siempre podés agregar.
-
-## VALOR HORA — FLEXIBILIDAD OBLIGATORIA
-Si el emprendedor no sabe su valor hora o prefiere calcularlo al final:
-- ACEPTALO SIN INSISTIR: "Perfecto, lo calculamos al final con los resultados."
-- Continuá sin bloquear el flujo
-- En el JSON final: valor_hora = 0 y completá los valores de mercado
-Esto es OBLIGATORIO — NUNCA bloquees el análisis por este dato.
-
-## ═══════════════════════════════════════
-## MANEJO MULTI-PRODUCTO
-## ═══════════════════════════════════════
-
-Cuando el emprendedor menciona que vende MÁS DE UN producto:
-
-PASO 1 — INVENTARIO: "Hacemos una lista rápida. ¿Cuáles son tus productos, a qué precio vendés cada uno y cuántas unidades por mes?"
-Registrar: nombre, precio, volumen mensual de CADA producto.
-
-PASO 2 — COSTOS FIJOS: preguntar UNA SOLA VEZ (Bloque 3 completo). Distribuir entre el TOTAL de unidades de todos los productos.
-
-PASO 3 — COSTOS DIRECTOS: preguntar POR PRODUCTO, uno por uno. "Arranquemos por [producto 1]. ¿Cuánto te cuesta producir uno?" Completar el Bloque 2 entero para ese producto. Después: "Ahora [producto 2]..." y así con cada uno.
-
-PASO 4 — COSTOS VARIABLES: preguntar la plataforma y comisión UNA VEZ. Calcular automáticamente para cada producto según su precio.
-
-PASO 5 — RESULTADOS: generar JSON multi-producto (ver formato abajo).
-
-Si vende UN SOLO producto, el flujo es el normal (bloques 1-5 estándar).
-
-## ═══════════════════════════════════════
-## ESQUEMA DE PREGUNTAS — ORDEN OBLIGATORIO
-## ═══════════════════════════════════════
-
-### BLOQUE 1 — CONOCER EL NEGOCIO (preguntas 1.1 a 1.6, en este orden)
-1.1 → Nombre del negocio
-1.2 → Qué hace/vende (descripción libre — explorá si algo no queda claro)
-1.3 → Antigüedad del negocio
-1.4 → Tipo: fabrica / revende / servicios / ambos
-1.4b → País y moneda: detectar del contexto (si dice "autónomo" → España/€, "monotributo" → Argentina/$ARS, "SAT" → México/$MXN, etc.). Si no hay señal clara → preguntar UNA VEZ: "¿Desde qué país operás? Así uso la moneda y los impuestos correctos." Registrar país + moneda local y usarlos en TODO el análisis.
-1.5 → ¿Cuántos productos o servicios distintos vendés?
-  → SI UNO SOLO: pedir nombre, precio y volumen mensual. Continuar normal.
-  → SI VARIOS: hacer inventario rápido:
-    "Hagamos una lista. Decime el nombre, precio y cuántos vendés por mes de cada uno."
-    Registrar cada producto con: nombre + precio + unidades/mes
-    Calcular TOTAL unidades/mes (suma de todos)
-1.6 → Confirmar la lista antes de continuar
-
-## FLUJO MULTI-PRODUCTO
-Cuando hay más de un producto:
-- BLOQUE 2: analizar costos directos de CADA producto por separado, uno a la vez. "Arranquemos por [producto 1]..." Después: "Ahora [producto 2]..."
-- BLOQUE 3: preguntar costos fijos UNA SOLA VEZ. Dividir entre el TOTAL de unidades mensuales (todos los productos sumados).
-- BLOQUE 4: preguntar plataforma y % de comisión UNA VEZ. Calcular el monto por producto según su precio individual. El envío preguntar si es igual para todos o diferente.
-- BLOQUE 5: mostrar resultados POR PRODUCTO + un CONSOLIDADO total.
-
-### BLOQUE 2 — COSTOS DIRECTOS (varía según tipo de negocio)
-
-SI FABRICA:
-2.1 → Nombre del producto principal
-2.2 → "¿Qué materiales o componentes lleva tu producto? Hacemos una lista — desde la materia prima principal hasta el último detalle." (extraé cada componente)
-2.3 → Para CADA insumo mencionado: ¿cuánto pagás? ¿cuántas unidades salen de esa compra? → REGISTRAR nombre + costo por unidad
-2.4 → "¿Hay algo más que lleve, por pequeño que sea? Pegamento, pintura, tornillos, etiquetas..." → Si ya fue registrado en 2.3 → NO duplicar
-2.5 → Embalaje y presentación — TODO JUNTO, UNA SOLA VEZ: "¿Qué usás para empacar, presentar y enviar? Cajas, bolsas, papel, etiquetas, cinta — todo junto" → Registrar como UN solo concepto. ⚠️ NO volver a preguntar embalaje en ningún otro bloque.
-2.6 → Tiempo de producción por unidad (horas)
-2.7 → ¿Quién pone el tiempo? → Si sabe valor hora → registrar. Si NO sabe → "Lo calculamos al final" → valor_hora = 0. NO insistir.
-  ⚠️ CRÍTICO: Si valor_hora = 0, NO incluir NINGÚN costo de mano de obra en el desglose. Ni estimado, ni valor de mercado, ni placeholder. El desglose solo incluye costos que el emprendedor confirmó. La mano de obra se muestra ÚNICAMENTE en la sección "Tu hora de trabajo" al final de los resultados.
-2.8 → Herramientas/equipos → costo + años de vida útil (para amortización)
-
-SI REVENDE:
-2.1 → Nombre del producto
-2.2 → Precio de compra al proveedor
-2.3 → Flete de compra (costo ÷ unidades del pedido)
-2.4 → Preparación antes de vender + embalaje (UNA sola pregunta)
-
-SI SERVICIOS:
-2.1 → Descripción del trabajo típico
-2.2 → Duración del trabajo
-2.3 → Quién lo hace y valor hora (misma lógica flexible del punto 2.7)
-2.4 → Materiales usados por trabajo
-2.5 → Transporte para brindar servicio
-
-CHECKPOINT BLOQUE 2: Verificar que NO hay ítems duplicados. Mostrar avance: "Hasta acá, tus costos directos son €X por unidad."
-
-### BLOQUE 3 — COSTOS FIJOS MENSUALES (en este orden)
-3.1 → Espacio: ¿casa o local? → alquiler mensual
-3.2 → Servicios: luz, agua, gas (monto mensual)
-3.3 → Internet / teléfono
-3.4 → Personal fijo (empleados + sueldos + cargas sociales)
-3.5 → Software y suscripciones (listar todos juntos)
-3.6 → Otros fijos: seguros, gestoría, contador, membresías
-3.7 → Publicidad: ¿es fija o variable? → Si fija → registrar acá. Si variable → guardar para Bloque 4. NO duplicar.
-3.8 → Impuestos fijos: Adaptar la pregunta según el país del emprendedor (ya lo sabés del Bloque 1):
-  - España: "¿Pagás cuota de autónomo? ¿Cuánto te sale al mes?"
-  - Argentina: "¿Estás en monotributo o responsable inscripto? ¿Cuánto pagás de cuota?"
-  - México: "¿Pagás alguna cuota fija al SAT o régimen simplificado?"
-  - Colombia: "¿Tenés algún impuesto fijo mensual, como el régimen simple?"
-  - Otros países: "¿Pagás algún impuesto fijo mensual?"
-  NUNCA mezclar términos de distintos países (no decir "autónomo o monotributo" a un español).
-3.9 → Impuestos sobre facturación: % IVA/IRPF. Si no sabe → estimado por país + disclaimer "Es una aproximación orientativa — confirmalo con tu contador o asesor fiscal."
-
-Estimados por país: España ~20% (IVA neto + IRPF), Argentina monotributo fijo / RI ~35%, México ~16% IVA + ~30% ISR, Chile ~19% IVA + ~25% renta.
-
-CHECKPOINT BLOQUE 3: Sumar total fijos. Dividir entre unidades/mes. Mostrar: "Tus gastos fijos son €X/mes. Por unidad: €Y"
-
-### BLOQUE 4 — COSTOS VARIABLES POR VENTA (en este orden)
-4.1 → ENVÍO — ⚠️ OBLIGATORIO cubrir estos 3 puntos, pero en 3 mensajes SEPARADOS, uno por vez, esperando la respuesta de cada uno antes de pasar al siguiente. PROHIBIDO juntarlos en un solo mensaje con "a) b) c)" o cualquier formato de lista — son tres preguntas independientes, en este orden:
-  1. ¿Enviás al cliente?
-  2. ¿Cuánto te cuesta cada envío?
-  3. ¿Ese costo está incluido en tu precio de venta, o se lo cobrás aparte al cliente?
-     → Incluido en el precio → ES costo variable, se suma al análisis
-     → Se cobra aparte al cliente → NO es costo, no se suma
-     → Subsidia parte → calcular la diferencia como costo
-4.2 → Comisiones de plataformas: Si el emprendedor ya mencionó una plataforma como gasto fijo (ej: Shopify, Etsy), CONECTAR: "Mencionaste que usás [plataforma]. Además de la suscripción, [plataforma] cobra un X% por cada venta. ¿Vendés también por alguna otra plataforma — Amazon, Etsy, Mercado Libre?" NO volver a preguntar por la plataforma que ya nombró.
-4.3 → Medios de pago: ¿aceptás tarjeta/PayPal/digital? ¿comisión? (si no sabe: Stripe ~2.9%, MercadoPago ~3.5-5.5%, PayPal ~3.5%)
-4.4 → Publicidad variable (SOLO si en 3.7 dijo que es variable): ¿cuánto por mes? → dividir entre unidades
-4.5 → Devoluciones: ¿con qué frecuencia? (1 de cada X)
-
-CHECKPOINT BLOQUE 4: Sumar variables por venta. Mostrar: "Cada venta te cuesta €X adicional"
-
-### BLOQUE 5 — DIAGNÓSTICO Y PRICING
-5.1 → Preguntar qué margen desea de forma conversacional y natural, en un párrafo corrido de prosa. PROHIBIDO usar viñetas, guiones, numeración, letras o saltos de línea entre las opciones — ni una lista con "-" ni con "1.2.3." ni nada que separe visualmente cada opción en su propia línea. Mencioná las tres opciones (20% conservador, 30% recomendado, 40% ambicioso) dentro del mismo texto fluido, como lo diría un consultor hablando, y dejá que el usuario elija con sus palabras. Si el usuario no sabe, sugerí el 30% como punto de partida.
-5.2 → precio_recomendado: siempre 0 en el JSON — la app lo calcula sola con calcPrecioRec() desde el desglose. NO lo calcules vos.
-5.3 → Generar JSON y mostrar resultados
-
-## ═══════════════════════════════════════
-## REGLAS ANTI-DUPLICACIÓN — OBLIGATORIAS
-## ═══════════════════════════════════════
-
-REGLA 1: Antes de registrar un costo, verificar si ya existe uno similar. Si existe, NO crear línea nueva.
-REGLA 2: El embalaje se pregunta UNA VEZ en el punto 2.5. Si el emprendedor lo menciona después, se actualiza el 2.5, no se crea línea nueva.
-REGLA 3: La publicidad es FIJA (Bloque 3), VARIABLE (Bloque 4) u OCASIONAL (ver REGLA 7), nunca en más de una categoría.
-REGLA 4: El envío es costo SOLO si lo paga el emprendedor y está incluido en el precio. Si el cliente lo paga aparte, NO se cuenta.
-REGLA 5: Al generar el JSON, cada concepto aparece UNA sola vez. Revisar antes de generar.
-REGLA 6: Si el emprendedor menciona un costo fuera de su bloque, clasificarlo correctamente e incorporarlo sin drama.
-REGLA 7 — GASTOS OCASIONALES SIN FRECUENCIA DEFINIDA: si un gasto (publicidad, herramientas, lo que sea) NO es mensual fijo ni recurrente por venta, sino algo que el emprendedor hace "de vez en cuando" o "cuando puede" SIN una frecuencia clara (ej: "gasto €15 ocasionalmente, no es fijo"), NO lo prorratees entre las unidades ni lo incluyas en el desglose de costo por unidad. Es un costo hundido/puntual, no afecta el cálculo de precio. Confirmá esto con el emprendedor: "Como no es un gasto fijo ni regular, no lo sumo al costo por unidad — no afecta tu precio." Si el emprendedor aclara una frecuencia concreta (ej: "una vez por trimestre" o "€X cada 2 meses"), ahí sí se puede prorratear dividiendo por el período correspondiente.
-
-## MANEJO DE RESPUESTAS VAGAS — 3 NIVELES
-Nivel 1: Meses reales ("¿Recordás cuánto vendiste en ${prev3[0]}, ${prev3[1]} y ${prev3[2]}?")
-Nivel 2: "¿Tenés algún registro — cuaderno, celular, pedidos de WhatsApp?"
-Nivel 3: "Uso un estimado promedio. Lo ajustás después con los números reales."
-
-## CUÁNDO MOSTRAR RESULTADOS
-Cuando tengas TODOS los datos de los 5 bloques, terminá tu mensaje con:
-[RESULTADOS_LISTOS]
-
-FORMATO PRODUCTO ÚNICO:
-{"modo":"single","negocio":"nombre","producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_elegido":30,"margen_actual_pct":0,"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes":0,"moneda":"€","tiempo_horas":0,"valor_hora":0,"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","desglose":[{"concepto":"nombre","valor":0}],"consejo_cualitativo":"consejo sin numeros","problema_detectado":"problema"}
-
-FORMATO MULTI-PRODUCTO:
-{"modo":"multi","negocio":"nombre","moneda":"€","margen_elegido":30,"productos":[{"producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_actual_pct":0,"ganancia_unidad":0,"unidades_mes":0,"tiempo_horas":0,"valor_hora":0,"desglose":[{"concepto":"nombre","valor":0}]}],"consolidado":{"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes_total":0,"costo_fijo_mensual_total":0},"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","consejo_cualitativo":"consejo sin numeros","problema_detectado":"problema"}
-
-REGLAS DEL JSON:
-- modo: "single" si es un solo producto, "multi" si son varios
-- precio_recomendado: siempre 0 en el JSON — la app lo calcula sola con calcPrecioRec() desde el desglose. NO lo calcules vos.
-- costo_total SIEMPRE = suma exacta de todos los ítems del desglose. VERIFICAR.
-- En multi-producto: costo_fijo_unit se calcula dividiendo los fijos totales entre TODAS las unidades de todos los productos, NO entre las unidades de un solo producto.
-- consejo_cualitativo: Consejo personalizado SIN NINGÚN NÚMERO. Solo observaciones cualitativas, sugerencias y estrategias basadas en lo que aprendiste del negocio. NUNCA menciones cifras, porcentajes ni montos — la app muestra los números correctos automáticamente. Ejemplos buenos: "Tu alquiler y cuota de autónomo son los gastos que más pesan por unidad. Podrías considerar trabajar desde casa para reducir fijos." Ejemplos MALOS: "Estás perdiendo €8,76 por unidad" (eso lo muestra la app, no vos).
-- Si valor_hora es 0 (no definido), NO incluyas mano de obra en el desglose NI en el costo_total. NUNCA uses un valor de mercado como sustituto en el desglose — eso lo hace la app automáticamente en la sección "Tu hora de trabajo". Si incluís mano de obra con valor_hora=0, los números se duplican y el análisis queda mal. Esto es un error grave.
-- desglose: cada concepto UNA sola vez. Sin duplicados.
-- REGLA CRÍTICA DE PORCENTAJES: cuando un costo se calcula como porcentaje del precio de venta (impuestos sobre facturación, comisiones de plataforma, comisiones de tarjetas/medios de pago), el nombre del concepto DEBE incluir el porcentaje explícitamente. EJEMPLOS CORRECTOS: "Impuestos s/facturación 20%", "Comisión Shopify 2%", "Comisión tarjetas 1.5%", "IVA/IRPF 20%". EJEMPLOS INCORRECTOS: "Impuestos estimados (IVA/IRPF)", "Comisiones plataforma y pago" (sin el %). Esta regla es OBLIGATORIA — sin el porcentaje en el nombre, la app no puede calcular el precio correcto.
-- tiempo_horas y valor_hora: si no definió valor hora, valor_hora=0, completar mercado bajo/medio/alto según rubro+país.
-- FORMATO DE SALIDA OBLIGATORIO: escribí exactamente [RESULTADOS_LISTOS] y en la misma línea el JSON plano sin espacios entre medio. PROHIBIDO ABSOLUTO usar bloques de código, backticks o markdown. El JSON va en texto plano directo.
-- EJEMPLO CORRECTO: [RESULTADOS_LISTOS]{"modo":"single",...}
-- EJEMPLO INCORRECTO (NUNCA hacer esto): poner backticks, bloques json, o saltos entre [RESULTADOS_LISTOS] y el JSON.
-- margen_elegido: el porcentaje que eligió el emprendedor (20, 30 o 40).
-
-## DETECCIÓN DE MONEDA MIXTA — OBLIGATORIO
-Durante TODO el análisis, si el usuario menciona un valor en una moneda DISTINTA a la moneda del negocio (ejemplo: negocio en € pero dice "$25" o "dólares" o "USD"), INMEDIATAMENTE:
-1. Detectar el símbolo o palabra de moneda distinta ($, USD, dólar, peso, libra, etc.)
-2. Preguntar: "Vi que me diste ese valor en [moneda mencionada]. ¿Lo uso en [moneda extranjera] tal cual, o lo convertís a [moneda del negocio]?"
-3. Si el negocio compra en una moneda y vende en otra (ej: costos en USD, ventas en €): registrar la moneda de compra y la de venta por separado. Pedirle al usuario que confirme el tipo de cambio que usa o decirle "Si preferís, usamos el tipo de cambio actual — ¿cuánto está el dólar para vos?"
-4. NUNCA mezclar monedas silenciosamente. Siempre confirmar antes de registrar un valor en moneda distinta.
-
-## REGLAS CRÍTICAS
-- NUNCA dos preguntas en el mismo mensaje
-- Comentarios mesurados — solo cuando aporten valor real
-- Nunca preguntes dos veces lo mismo
-- Aceptá datos nuevos en cualquier momento
-- Usá la moneda correcta según el país del usuario
-- El JSON siempre en una sola línea compacta
-- SIEMPRE preguntar quién paga el envío
-- SIEMPRE ofrecer las 3 opciones de margen antes de calcular`;
-}
-
-// ── Init chat ──
-async function initChat() {
-  updateProgress(1);
-  const welcomeMsg = 'Hola, soy PymeGuía 👋 Estoy acá para ayudarte a entender los números de tu negocio y asegurarme de que tu precio de venta tenga sentido. Vamos a revisarlo juntos, paso a paso. ¿Empezamos?';
-  addMessage('ai', welcomeMsg);
-  conversationHistory = [
-    { role: 'assistant', content: welcomeMsg }
-  ];
-  await saveConversation();
-}
-
-// ── Send message ──
-window.sendMessage = async function() {
-  if (isLoading) return;
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if (!text) return;
-
-  input.value = '';
-  input.style.height = 'auto';
-  addMessage('user', text);
-  conversationHistory.push({ role: 'user', content: text });
-
-  setLoading(true);
-  showTyping();
-
-  try {
-    const response = await callAI(conversationHistory);
-    hideTyping();
-
-    if (response.includes('[RESULTADOS_LISTOS]')) {
-      const parts = response.split('[RESULTADOS_LISTOS]');
-      const beforeText = parts[0].trim();
-      if (beforeText) addMessage('ai', beforeText);
-
-      try {
-        // Extract JSON more robustly
-        let jsonStr = parts[1].trim();
-        // Remove markdown code blocks if present
-        jsonStr = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
-        // Find the JSON object
-        const startIdx = jsonStr.indexOf('{');
-        const endIdx = jsonStr.lastIndexOf('}');
-        if (startIdx !== -1 && endIdx !== -1) {
-          jsonStr = jsonStr.substring(startIdx, endIdx + 1);
-        }
-        const data = JSON.parse(jsonStr);
-        window.lastResultsData = data;
-        conversationHistory.push({ role: 'assistant', content: response });
-        await saveConversation();
-        updateProgress(5);
-        setTimeout(() => showResults(data), 600);
-      } catch(e) {
-        console.error('JSON parse error:', e);
-        // Ask AI to reformat
-        conversationHistory.push({ role: 'assistant', content: response });
-        conversationHistory.push({ role: 'user', content: 'Por favor mostrá los resultados finales.' });
-        const retry = await callAI(conversationHistory);
-        hideTyping();
-        if (retry.includes('[RESULTADOS_LISTOS]')) {
-          const retryParts = retry.split('[RESULTADOS_LISTOS]');
-          try {
-            let retryJson = retryParts[1].trim().replace(/```json/g, '').replace(/```/g, '').trim();
-            const si = retryJson.indexOf('{');
-            const ei = retryJson.lastIndexOf('}');
-            if (si !== -1 && ei !== -1) retryJson = retryJson.substring(si, ei + 1);
-            const data = JSON.parse(retryJson);
-            conversationHistory.push({ role: 'assistant', content: retry });
-            await saveConversation();
-            updateProgress(5);
-            setTimeout(() => showResults(data), 600);
-          } catch(e2) {
-            addMessage('ai', 'Hubo un problema al generar los resultados. Escribí "mostrame los resultados" para intentar de nuevo.');
-          }
-        } else {
-          addMessage('ai', retry);
-          conversationHistory.push({ role: 'assistant', content: retry });
-        }
-      }
-    } else {
-      // Fallback: el modelo olvidó [RESULTADOS_LISTOS] pero puede igual traer JSON de resultados
-      let fallbackData = null;
-      try {
-        const cleaned = response.replace(/```json/gi, '').replace(/```/g, '').trim();
-        const si = cleaned.indexOf('{');
-        const ei = cleaned.lastIndexOf('}');
-        if (si !== -1 && ei !== -1) {
-          const candidate = JSON.parse(cleaned.substring(si, ei + 1));
-          if (candidate.modo === 'single' || candidate.modo === 'multi') {
-            fallbackData = candidate;
-          }
-        }
-      } catch(e) { /* no era JSON de resultados */ }
-
-      if (fallbackData) {
-        window.lastResultsData = fallbackData;
-        conversationHistory.push({ role: 'assistant', content: response });
-        await saveConversation();
-        updateProgress(5);
-        setTimeout(() => showResults(fallbackData), 600);
-      } else {
-        addMessage('ai', response);
-        conversationHistory.push({ role: 'assistant', content: response });
-        detectAndUpdateBlock(response);
-        await saveConversation();
-      }
-    }
-  } catch(e) {
-    hideTyping();
-    addMessage('ai', getFriendlyError(e.message), true);
-  }
-
-  setLoading(false);
-};
-
-function getFriendlyError(msg) {
-  if (msg.includes('exceeded_limit') || msg.includes('rate')) {
-    return 'Demasiadas consultas en poco tiempo. Esperá unos segundos y volvé a intentarlo. 🙏';
-  }
-  if (msg.includes('invalid') || msg.includes('api_key')) {
-    return 'La API key no es válida. Verificá que esté bien copiada en console.anthropic.com';
-  }
-  if (msg.includes('insufficient') || msg.includes('credit')) {
-    return 'Te quedaste sin créditos en Anthropic. Recargá desde console.anthropic.com → Billing.';
-  }
-  return 'Hubo un error de conexión. Verificá tu internet y volvé a intentarlo.';
-}
-
-function detectAndUpdateBlock(msg) {
-  const lower = msg.toLowerCase();
-  if (lower.includes('gastos fijos') || lower.includes('alquiler') || lower.includes('cuota de autónomo')) {
-    updateProgress(3);
-  } else if (lower.includes('comisión') || lower.includes('envío por venta') || lower.includes('medio de pago')) {
-    updateProgress(4);
-  } else if (lower.includes('costo total') || lower.includes('precio mínimo') || lower.includes('margen')) {
-    updateProgress(5);
-  } else if (lower.includes('materia prima') || lower.includes('insumo') || lower.includes('cuánto tardás')) {
-    updateProgress(2);
-  }
-}
-
-// ── API call ──
-async function callAI(messages) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 1024,
-      system: buildSystemPrompt(),
-      messages: messages
-    })
-  });
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.error?.message || response.statusText || 'API error');
-  }
-
-  const data = await response.json();
-  return data.content[0].text;
-}
-
-// ── Voice input ──
-let recognition = null;
-let isRecording = false;
-
-window.toggleVoice = function() {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    alert('Tu navegador no soporta reconocimiento de voz. Usá Chrome o Edge.');
-    return;
-  }
-
-  if (isRecording) {
-    recognition.stop();
-    return;
-  }
-
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRecognition();
-  recognition.lang = 'es-AR';
-  recognition.continuous = false;
-  recognition.interimResults = false;
-
-  recognition.onstart = () => {
-    isRecording = true;
-    document.getElementById('voice-btn').classList.add('recording');
-    document.getElementById('chat-input').placeholder = '🎤 Escuchando...';
-  };
-
-  recognition.onresult = (e) => {
-    const transcript = e.results[0][0].transcript;
-    const input = document.getElementById('chat-input');
-    input.value = transcript;
-    autoResize(input);
-  };
-
-  recognition.onend = () => {
-    isRecording = false;
-    document.getElementById('voice-btn').classList.remove('recording');
-    document.getElementById('chat-input').placeholder = 'Escribí tu respuesta...';
-  };
-
-  recognition.onerror = () => {
-    isRecording = false;
-    document.getElementById('voice-btn').classList.remove('recording');
-    document.getElementById('chat-input').placeholder = 'Escribí tu respuesta...';
-  };
-
-  recognition.start();
-};
-
-// ── Voice input ──
-function addMessage(role, text, isError = false) {
-  const container = document.getElementById('chat-messages');
-  const wrap = document.createElement('div');
-  wrap.className = `msg-wrap ${role}`;
-
-  const avatar = document.createElement('div');
-  avatar.className = `msg-avatar ${role}`;
-  avatar.textContent = role === 'ai' ? 'PG' : '👤';
-
-  const bubble = document.createElement('div');
-  bubble.className = `msg-bubble ${isError ? 'msg-error' : ''}`;
-  bubble.innerHTML = text
-    .replace(/\n/g, '<br>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-  wrap.appendChild(avatar);
-  wrap.appendChild(bubble);
-  container.appendChild(wrap);
-  container.scrollTop = container.scrollHeight;
-}
-
-function showTyping() {
-  const container = document.getElementById('chat-messages');
-  const wrap = document.createElement('div');
-  wrap.className = 'msg-wrap ai';
-  wrap.id = 'typing-indicator';
-
-  const avatar = document.createElement('div');
-  avatar.className = 'msg-avatar ai';
-  avatar.textContent = 'PG';
-
-  const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble';
-  bubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
-
-  wrap.appendChild(avatar);
-  wrap.appendChild(bubble);
-  container.appendChild(wrap);
-  container.scrollTop = container.scrollHeight;
-}
-
-function hideTyping() {
-  const el = document.getElementById('typing-indicator');
-  if (el) el.remove();
-}
-
-function setLoading(val) {
-  isLoading = val;
-  document.getElementById('send-btn').disabled = val;
-  document.getElementById('chat-input').disabled = val;
-}
-
-function updateProgress(block) {
-  currentBlock = block;
-  const pct = ((block - 1) / 5) * 100;
-  document.getElementById('progress-fill').style.width = pct + '%';
-  const labels = {1:'Tu negocio',2:'Tus costos',3:'Gastos fijos',4:'Costos de venta',5:'Diagnóstico'};
-  document.getElementById('progress-text').textContent = labels[block] || '';
-}
-
-window.handleKeyDown = function(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    window.sendMessage();
-  }
-};
-
-window.autoResize = function(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-};
-
-// ── Results ──
-function showResults(data) {
-  showScreen('results-screen');
-  window.lastResultsData = data;
-  const c = data.moneda || '€';
-  const body = document.getElementById('results-body');
-
-  if (data.modo === 'multi' && data.productos && data.productos.length > 0) {
-    // ═══ MULTI-PRODUCT MODE ═══
-    const con = data.consolidado || {};
-    let productCards = '';
-    data.productos.forEach((p, i) => {
-      const desg = p.desglose && p.desglose.length > 0 ? p.desglose.filter(r => r.valor > 0) : [];
-      const ct = desg.length > 0 ? desg.reduce((s,r) => s + r.valor, 0) : p.costo_total;
-      const gan = p.precio_actual - ct;
-      const margen = p.precio_actual > 0 ? (gan / p.precio_actual) * 100 : 0;
-      const precRec = calcPrecioRec(desg, ct, data.margen_elegido || 30).prec;
-      let sClass = 'success', sIcon = '✅', sText = `Margen ${margen.toFixed(1)}%`;
-      if (margen < 0) { sClass = 'danger'; sIcon = '🚨'; sText = `Perdés ${c}${fmt(Math.abs(gan))}/ud`; }
-      else if (margen < 20) { sClass = 'warn'; sIcon = '⚠️'; sText = `Margen ajustado ${margen.toFixed(1)}%`; }
-
-      productCards += `
-        <div class="section-card" style="margin-bottom:16px;animation-delay:${i*0.08}s">
-          <div class="section-card-header">📦 ${p.producto} — ${p.unidades_mes} uds/mes</div>
-          ${desg.map(r => `<div class="cost-row"><span class="cost-label">${r.concepto}</span><span class="cost-value">${c}${fmt(r.valor)}</span></div>`).join('')}
-          <div class="cost-row total"><span class="cost-label">Costo total</span><span class="cost-value">${c}${fmt(ct)}</span></div>
-          <div style="padding:10px 18px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-            <div><div class="metric-label">Precio actual</div><div style="font-size:18px;font-weight:700;">${c}${fmt(p.precio_actual)}</div></div>
-            <div><div class="metric-label">Ganancia/ud</div><div style="font-size:18px;font-weight:700;color:${margen<0?'var(--danger)':margen<20?'var(--warn)':'var(--success)'};">${c}${fmt(gan)}</div></div>
-            <div><div class="metric-label">Precio rec.</div><div style="font-size:18px;font-weight:700;color:var(--accent);">${c}${fmt(precRec)}</div></div>
-          </div>
-          <div class="status-banner ${sClass}" style="margin:0 18px 14px;border-radius:8px;padding:8px 12px;">
-            <div class="status-icon" style="font-size:16px;">${sIcon}</div>
-            <div class="status-text-sub" style="font-size:12px;">${sText}</div>
-          </div>
-        </div>`;
-    });
-
-    // Calcular consolidado desde los productos (no confiar en los valores del AI)
-    let ganMesTot = 0, unidadesTot = 0;
-    data.productos.forEach(p => {
-      const desgP = p.desglose && p.desglose.length > 0 ? p.desglose.filter(r => r.valor > 0) : [];
-      const ctP = desgP.length > 0 ? desgP.reduce((s,r) => s + r.valor, 0) : p.costo_total;
-      const ganP = p.precio_actual - ctP;
-      ganMesTot += Math.round(ganP * (p.unidades_mes || 0) * 100) / 100;
-      unidadesTot += p.unidades_mes || 0;
-    });
-    const ganMes = Math.round(ganMesTot * 100) / 100;
-    const ganAnual = Math.round(ganMes * 12 * 100) / 100;
-
-    body.innerHTML = `
-      <div class="results-title-section">
-        <div class="results-eyebrow">Análisis completado — ${data.productos.length} productos</div>
-        <div class="results-title">${data.negocio}</div>
-      </div>
-      ${productCards}
-      <div class="results-step">
-        <div class="results-step-label">📊 Consolidado</div>
-        <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
-          <div class="metric-card success-border"><div class="metric-label">Ganancia mensual total</div><div class="metric-value" style="color:${ganMes<0?'var(--danger)':'var(--success)'};">${c}${fmt(ganMes)}</div><div class="metric-desc">Con ${unidadesTot || '—'} unidades/mes</div></div>
-          <div class="metric-card success-border"><div class="metric-label">Ganancia anual proyectada</div><div class="metric-value" style="color:var(--success)">${c}${fmt(ganAnual)}</div><div class="metric-desc">Si mantenés el volumen actual</div></div>
+</section>
+
+<!-- PROBLEMA -->
+<section class="problem">
+  <div class="wrap">
+    <span class="section-label">El problema</span>
+    <p class="problem-lead">La mayoría de los negocios pequeños no sabe cuánto le cuesta producir lo que vende.</p>
+
+    <div class="story-card">
+      <div class="story-head">
+        <div class="story-avatar">M</div>
+        <div class="story-head-text">
+          <div class="name">María</div>
+          <div class="biz">Artesanías Valencia — cestas de mimbre</div>
         </div>
       </div>
-      ${data.consejo_cualitativo ? `<div class="advice-card"><div class="advice-title">💡 Consejo para tu negocio</div><div class="advice-text">${data.consejo_cualitativo}</div></div>` : ''}
-      <div class="philosophy-card"><div class="philosophy-title">Precio, costo y valor percibido</div><div class="philosophy-text">El precio mínimo es tu piso — por debajo de ese número cada venta te cuesta dinero.<br><br><em>Los costos te dicen hasta dónde podés bajar. El mercado te dice hasta dónde podés subir. Tu trabajo es encontrar ese punto.</em></div></div>
-      <div class="results-actions"><button class="btn-primary" onclick="continueChat()">Continuar conversación →</button></div>`;
-
-  } else {
-    // ═══ SINGLE PRODUCT MODE ═══
-    const desgloseItems = data.desglose && data.desglose.length > 0
-      ? data.desglose.filter(r => r.valor > 0)
-      : [{ concepto: 'Costos directos', valor: data.costo_directo },{ concepto: 'Gastos fijos', valor: data.costo_fijo_unit },{ concepto: 'Costos variables', valor: data.costo_variable }].filter(r => r.valor > 0);
-    const costoTotal = desgloseItems.reduce((s,r) => s+r.valor, 0) || data.costo_total;
-    const gan = data.precio_actual - costoTotal;
-    const margenReal = data.precio_actual > 0 ? (gan / data.precio_actual) * 100 : 0;
-    const { prec: precRecVerificado, costoReal: costoRealAlRec } = calcPrecioRec(desgloseItems, costoTotal, data.margen_elegido || 30);
-    const { prec: precioMinimo } = calcPrecioRec(desgloseItems, costoTotal, 0);
-    const ganRec = Math.round((precRecVerificado - costoRealAlRec) * 100) / 100;
-    const ganMesReal = Math.round(gan * data.unidades_mes * 100) / 100;
-    const ganMesRec = Math.round(ganRec * data.unidades_mes * 100) / 100;
-    const ganAnualRec = Math.round(ganMesRec * 12 * 100) / 100;
-    let statusClass='success',statusIcon='✅',statusTitle='Buen margen',statusSub=`Ganás ${c}${fmt(gan)} por unidad — margen del ${margenReal.toFixed(1)}%`;
-    if(margenReal<0){statusClass='danger';statusIcon='🚨';statusTitle='Estás perdiendo dinero';statusSub=`Perdés ${c}${fmt(Math.abs(gan))} por cada unidad que vendés`;}
-    else if(margenReal<20){statusClass='warn';statusIcon='⚠️';statusTitle='Margen muy ajustado';statusSub=`Ganás ${c}${fmt(gan)} por unidad — cualquier imprevisto te come la ganancia`;}
-
-    const tieneTiempo = data.tiempo_horas && data.tiempo_horas > 0;
-    const sinValorHora = !data.valor_hora || data.valor_hora === 0;
-    const mostrarHoras = tieneTiempo && sinValorHora;
-    let horaCalc=null,pBajo=null,pMedio=null,pAlto=null;
-    let hBajo=data.valor_hora_mercado_bajo||10,hMedio=data.valor_hora_mercado_medio||14,hAlto=data.valor_hora_mercado_alto||18;
-    const rubroRef=data.rubro_referencia||'tu rubro';
-    if(tieneTiempo){
-      // Detect if labor is already in the desglose (AI shouldn't include it but sometimes does)
-      const laborItem = desgloseItems.find(r => r.concepto.toLowerCase().includes('tiempo') || r.concepto.toLowerCase().includes('mano de obra') || r.concepto.toLowerCase().includes('trabajo'));
-      const laborInDesglose = laborItem ? laborItem.valor : 0;
-      const costoSinLabor = costoTotal - laborInDesglose;
-      horaCalc = (data.precio_actual - costoSinLabor) / data.tiempo_horas;
-      pBajo = costoSinLabor + (data.tiempo_horas * hBajo);
-      pMedio = costoSinLabor + (data.tiempo_horas * hMedio);
-      pAlto = costoSinLabor + (data.tiempo_horas * hAlto);
-    }
-
-    body.innerHTML = `
-      <div class="results-title-section"><div class="results-eyebrow">Análisis completado</div><div class="results-title">${data.negocio}</div><div class="results-subtitle">${data.producto}</div></div>
-      <div class="results-step"><div class="results-step-label">① Lo que te cuesta producir cada unidad</div>
-        <div class="section-card"><div class="section-card-header">📦 Desglose de costos</div>
-          ${desgloseItems.map(r=>`<div class="cost-row"><span class="cost-label">${r.concepto}</span><span class="cost-value">${c}${fmt(r.valor)}</span></div>`).join('')}
-          <div class="cost-row total"><span class="cost-label">COSTO TOTAL por unidad</span><span class="cost-value">${c}${fmt(costoTotal)}</span></div></div></div>
-      <div class="results-step"><div class="results-step-label">② Lo que cobrás hoy y qué te deja</div>
-        <div class="status-banner ${statusClass}"><div class="status-icon">${statusIcon}</div><div><div class="status-text-title">${statusTitle}</div><div class="status-text-sub">${statusSub}</div></div></div>
-        <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
-          <div class="metric-card"><div class="metric-label">Tu precio actual</div><div class="metric-value">${c}${fmt(data.precio_actual)}</div><div class="metric-desc">Lo que cobrás hoy</div></div>
-          <div class="metric-card ${margenReal<0?'danger-border':margenReal<20?'warn-border':'success-border'}"><div class="metric-label">Ganancia por unidad</div><div class="metric-value" style="color:${margenReal<0?'var(--danger)':margenReal<20?'var(--warn)':'var(--success)'}">${c}${fmt(gan)}</div><div class="metric-desc">Precio actual − costo total</div></div>
-          <div class="metric-card" style="grid-column:1/-1;"><div class="metric-label">Ganancia mensual actual</div><div class="metric-value" style="color:${ganMesReal<0?'var(--danger)':'var(--text)'}">${c}${fmt(ganMesReal)}</div><div class="metric-desc">Con ${data.unidades_mes} unidades/mes a tu precio actual</div></div></div></div>
-      <div class="results-step"><div class="results-step-label">③ Lo que deberías cobrar</div>
-        <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
-          <div class="metric-card danger-border"><div class="metric-label">Precio mínimo</div><div class="metric-value">${c}${fmt(precioMinimo)}</div><div class="metric-desc">Punto de equilibrio real — por debajo perdés dinero</div></div>
-          <div class="metric-card accent-border"><div class="metric-label">Precio recomendado</div><div class="metric-value" style="color:var(--accent)">${c}${fmt(precRecVerificado)}</div><div class="metric-desc">Con margen del ${data.margen_elegido||30}% — ${(data.margen_elegido||30)===20?'conservador':(data.margen_elegido||30)===40?'ambicioso':'recomendado'}</div></div></div>
-        <div class="results-gap-note">${data.precio_actual<precRecVerificado?`<span class="gap-warn">⬆️ Diferencia con tu precio actual: ${c}${fmt(precRecVerificado-data.precio_actual)} por unidad</span>`:`<span class="gap-ok">✅ Tu precio actual ya está por encima del recomendado</span>`}</div></div>
-      <div class="results-step"><div class="results-step-label">④ Qué ganarías al precio recomendado</div>
-        <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
-          <div class="metric-card success-border"><div class="metric-label">Ganancia mensual</div><div class="metric-value" style="color:var(--success)">${c}${fmt(ganMesRec)}</div><div class="metric-desc">Con ${data.unidades_mes} unidades/mes</div></div>
-          <div class="metric-card success-border"><div class="metric-label">Ganancia anual proyectada</div><div class="metric-value" style="color:var(--success)">${c}${fmt(ganAnualRec)}</div><div class="metric-desc">Si mantenés el volumen actual</div></div></div></div>
-      <div class="advice-card" style="border-left-color: var(--accent);">
-        <div class="advice-title" style="color: var(--accent);">📊 Diagnóstico numérico</div>
-        <div class="advice-text" style="font-size:14px; line-height:1.6;">
-          Tu costo real por unidad es <strong>${c}${fmt(costoTotal)}</strong>. A tu precio actual de <strong>${c}${fmt(data.precio_actual)}</strong>, 
-          ${gan < 0 ? `perdés <strong style="color:var(--danger)">${c}${fmt(Math.abs(gan))}</strong> por cada venta` : `ganás <strong style="color:var(--success)">${c}${fmt(gan)}</strong> por unidad`}. 
-          ${gan < 0 ? `Eso son <strong style="color:var(--danger)">${c}${fmt(Math.abs(gan * data.unidades_mes))}</strong> de pérdida mensual con ${data.unidades_mes} unidades.` : `Eso son <strong>${c}${fmt(gan * data.unidades_mes)}</strong> de ganancia mensual con ${data.unidades_mes} unidades.`}
-          Para un margen del ${data.margen_elegido || 30}%, tu precio debería ser <strong style="color:var(--success)">${c}${fmt(precRecVerificado)}</strong>.
+      <div class="story-stats">
+        <div class="stat">
+          <div class="num">45&nbsp;€</div>
+          <div class="label">Vendía c/u</div>
+        </div>
+        <div class="stat">
+          <div class="num">62&nbsp;€</div>
+          <div class="label">Le costaba c/u</div>
+        </div>
+        <div class="stat loss">
+          <div class="num">-17&nbsp;€</div>
+          <div class="label">Perdía c/venta</div>
         </div>
       </div>
-      ${data.consejo_cualitativo?`<div class="advice-card"><div class="advice-title">💡 Consejo para tu negocio</div><div class="advice-text">${data.consejo_cualitativo}</div></div>`:''}
-      ${mostrarHoras?`<div class="advice-card" style="border-left-color:var(--warn);"><div class="advice-title" style="color:var(--warn);">⏱️ Tu hora de trabajo</div><div class="advice-text">Notamos que no definiste un valor para tu hora de trabajo — la mayoría de los emprendedores no lo calcula. Pero es uno de los datos que más cambia tu margen real.<br><br><strong>Con tu precio actual de ${c}${fmt(data.precio_actual)} y ${data.tiempo_horas} horas por unidad, tu hora te está dejando ${c}${fmt(horaCalc)}.</strong>${horaCalc<0?' Estás pagando por trabajar.':horaCalc<hBajo?' Está por debajo del mínimo de mercado.':''}<br><br>Para que tu hora valga lo que cobran ${rubroRef}:<div style="margin-top:12px;display:flex;flex-direction:column;gap:6px;padding:12px;background:var(--surface2);border-radius:var(--radius-sm);"><div style="display:flex;justify-content:space-between;"><span>Tarifa baja — ${c}${fmt(hBajo)}/h</span><strong>Precio: ${c}${fmt(pBajo)}</strong></div><div style="display:flex;justify-content:space-between;"><span>Tarifa media — ${c}${fmt(hMedio)}/h</span><strong>Precio: ${c}${fmt(pMedio)}</strong></div><div style="display:flex;justify-content:space-between;"><span>Tarifa premium — ${c}${fmt(hAlto)}/h</span><strong>Precio: ${c}${fmt(pAlto)}</strong></div></div></div></div>`:``}
-      <div class="philosophy-card"><div class="philosophy-title">Precio, costo y valor percibido</div><div class="philosophy-text">El precio mínimo es tu piso — por debajo de ese número cada venta te cuesta dinero.<br><br><em>Los costos te dicen hasta dónde podés bajar. El mercado te dice hasta dónde podés subir. Tu trabajo es encontrar ese punto.</em></div></div>
-      <div class="results-actions"><button class="btn-primary" onclick="continueChat()">Continuar conversación →</button></div>`;
-  }
+      <p class="story-quote">María vendía sus cestas a <strong>45&nbsp;€</strong>, pero entre materiales, alquiler del taller, impuestos y comisiones, cada una le costaba <strong>62&nbsp;€</strong> hacerla. Perdía <strong>17&nbsp;€ en cada venta</strong> — y no lo sabía hasta que hizo los números.</p>
+    </div>
+  </div>
+</section>
 
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+<!-- CÓMO FUNCIONA -->
+<section class="how">
+  <div class="wrap">
+    <span class="section-label">Cómo funciona</span>
+    <h2 class="section-title">Tres pasos, una conversación</h2>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>Contás tu negocio</h3>
+        <p>Respondés unas preguntas en lenguaje natural — como si se lo explicaras a un socio, no a una planilla.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>PymeGuía calcula</h3>
+        <p>Suma todos tus costos reales, incluso los que no ves: fijos, comisiones, impuestos, envíos, tu tiempo.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>Sabés qué hacer</h3>
+        <p>Tu costo real, tu precio mínimo y el precio recomendado — con números claros, no adivinanzas.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-function fmt(n) {
-  if (n == null) return '—';
-  return Number(n).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+<!-- PARA QUIÉN -->
+<section class="audience">
+  <div class="wrap">
+    <span class="section-label">Para quién es</span>
+    <h2 class="section-title">Cualquiera que venda algo y quiera saber si le conviene</h2>
+    <div class="chips">
+      <span class="chip">Artesanos</span>
+      <span class="chip">Freelancers</span>
+      <span class="chip">Comercios</span>
+      <span class="chip">Food</span>
+      <span class="chip">E-commerce</span>
+      <span class="chip">Servicios</span>
+    </div>
+    <p class="audience-note">Si vendés un producto o un servicio y nunca calculaste tu costo real, esto es para vos.</p>
+  </div>
+</section>
 
-// Resuelve la dependencia circular de costos que son % del precio (impuestos, comisiones)
-// P = costosFijos / (1 - pct_costos - margen)
-function calcPrecioRec(desgloseItems, costoTotal, margenPct) {
-  const margenDec = margenPct / 100;
-  let totalPct = 0, costosFijos = 0;
-  (desgloseItems || []).forEach(item => {
-    const m = item.concepto.match(/(\d+(?:\.\d+)?)\s*%/);
-    if (m) totalPct += parseFloat(m[1]) / 100;
-    else costosFijos += item.valor;
-  });
-  const den = 1 - totalPct - margenDec;
-  if (totalPct > 0 && den > 0.05) {
-    const prec = Math.round((costosFijos / den) * 100) / 100;
-    const costoReal = Math.round((costosFijos + totalPct * prec) * 100) / 100;
-    return { prec, costoReal };
-  }
-  const prec = Math.round((costoTotal / (1 - margenDec)) * 100) / 100;
-  return { prec, costoReal: costoTotal };
-}
+<!-- CIERRE -->
+<section class="close">
+  <div class="wrap">
+    <div class="cta-final">
+      <h2>Descubrí tu precio real hoy</h2>
+      <p>Sin planillas, sin contador, sin vueltas.</p>
+      <a class="btn btn-primary" href="/app.html">Empezar ahora</a>
+    </div>
+  </div>
+</section>
 
-window.continueChat = function() {
-  showScreen('app-screen');
-  updateProgress(currentBlock);
+<footer>
+  <div class="wrap">
+    <div class="tagline">PymeGuía</div>
+    Tu negocio, en orden.
+  </div>
+</footer>
 
-  if (window.lastResultsData) {
-    const d = window.lastResultsData;
-    const c = d.moneda || '€';
-    const container = document.getElementById('chat-messages');
-
-    const wrap = document.createElement('div');
-    wrap.className = 'msg-wrap ai';
-    wrap.style.maxWidth = '100%';
-    const avatar = document.createElement('div');
-    avatar.className = 'msg-avatar ai';
-    avatar.textContent = 'PG';
-    const bubble = document.createElement('div');
-    bubble.className = 'msg-bubble';
-    bubble.style.padding = '0';
-    bubble.style.maxWidth = '440px';
-    bubble.style.width = '100%';
-    bubble.style.overflow = 'hidden';
-    bubble.style.borderRadius = '14px';
-
-    let cardContent = '';
-    if (d.modo === 'multi' && d.productos) {
-      let prodRows = d.productos.map(p => {
-        const ct = p.desglose ? p.desglose.filter(r=>r.valor>0).reduce((s,r)=>s+r.valor,0) : p.costo_total;
-        const g = p.precio_actual - ct;
-        const m = p.precio_actual > 0 ? (g/p.precio_actual*100) : 0;
-        const desgM = p.desglose ? p.desglose.filter(r=>r.valor>0) : [];
-        const precRec = calcPrecioRec(desgM, ct, d.margen_elegido||30).prec;
-        const sColor = m < 0 ? '#dc2626' : m < 20 ? '#d97706' : '#059669';
-        return `
-          <div style="padding:10px 14px;border-bottom:1px solid #e4e7ec;">
-            <div style="font-weight:600;font-size:13px;margin-bottom:6px;">${p.producto} <span style="color:#9ca3af;font-weight:400;font-size:11px;">(${p.unidades_mes} uds/mes)</span></div>
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;">
-              <div><div style="font-size:8px;color:#9ca3af;text-transform:uppercase;">Costo</div><div style="font-size:14px;font-weight:600;">${c}${fmt(ct)}</div></div>
-              <div><div style="font-size:8px;color:#9ca3af;text-transform:uppercase;">Precio</div><div style="font-size:14px;font-weight:600;">${c}${fmt(p.precio_actual)}</div></div>
-              <div><div style="font-size:8px;color:#9ca3af;text-transform:uppercase;">Ganancia</div><div style="font-size:14px;font-weight:600;color:${sColor};">${c}${fmt(g)}</div></div>
-              <div><div style="font-size:8px;color:#9ca3af;text-transform:uppercase;">Recomend.</div><div style="font-size:14px;font-weight:600;color:#2563eb;">${c}${fmt(precRec)}</div></div>
-            </div>
-          </div>`;
-      }).join('');
-      let ganMesTot = 0;
-      d.productos.forEach(p => {
-        const ctP = p.desglose && p.desglose.length > 0 ? p.desglose.filter(r => r.valor > 0).reduce((s,r) => s + r.valor, 0) : p.costo_total;
-        ganMesTot += Math.round((p.precio_actual - ctP) * (p.unidades_mes || 0) * 100) / 100;
-      });
-      const ganMes = Math.round(ganMesTot * 100) / 100;
-      const ganAnual = Math.round(ganMes * 12 * 100) / 100;
-      cardContent = `
-        <div style="background:#1F4E79;color:white;padding:10px 14px;font-size:13px;font-weight:600;">📊 ${d.negocio} — ${d.productos.length} productos</div>
-        ${prodRows}
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#e4e7ec;">
-          <div style="background:#ecfdf5;padding:10px 14px;text-align:center;"><div style="font-size:8px;color:#059669;text-transform:uppercase;font-weight:600;">Ganancia mensual</div><div style="font-size:18px;font-weight:700;color:#059669;">${c}${fmt(ganMes)}</div></div>
-          <div style="background:#ecfdf5;padding:10px 14px;text-align:center;"><div style="font-size:8px;color:#059669;text-transform:uppercase;font-weight:600;">Ganancia anual</div><div style="font-size:18px;font-weight:700;color:#059669;">${c}${fmt(ganAnual)}</div></div>
-        </div>`;
-    } else {
-      const desg = d.desglose && d.desglose.length > 0 ? d.desglose.filter(r=>r.valor>0) : [];
-      const ct = desg.length > 0 ? desg.reduce((s,r)=>s+r.valor,0) : d.costo_total;
-      const g = d.precio_actual - ct;
-      const m = d.precio_actual > 0 ? (g/d.precio_actual*100) : 0;
-      const precRec = calcPrecioRec(desg, ct, d.margen_elegido||30).prec;
-      const precMin = calcPrecioRec(desg, ct, 0).prec;
-      let sColor='#059669',sBg='#ecfdf5',sIcon='✅',sText=`Margen ${m.toFixed(1)}%`;
-      if(m<0){sColor='#dc2626';sBg='#fef2f2';sIcon='🚨';sText=`Perdés ${c}${fmt(Math.abs(g))}/ud`;}
-      else if(m<20){sColor='#d97706';sBg='#fffbeb';sIcon='⚠️';sText=`Margen ajustado ${m.toFixed(1)}%`;}
-      let desgRows = desg.slice(0,8).map(r=>`<div style="display:flex;justify-content:space-between;padding:3px 14px;font-size:11px;"><span style="color:#6b7280;">${r.concepto}</span><span style="font-weight:500;">${c}${fmt(r.valor)}</span></div>`).join('');
-      if(desg.length>8) desgRows += `<div style="padding:2px 14px;font-size:10px;color:#9ca3af;">+ ${desg.length-8} conceptos más</div>`;
-      cardContent = `
-        <div style="background:#1F4E79;color:white;padding:10px 14px;font-size:13px;font-weight:600;">📊 ${d.negocio} · ${d.producto||''}</div>
-        <div style="background:${sBg};padding:8px 14px;display:flex;align-items:center;gap:8px;font-size:12px;color:${sColor};font-weight:600;">${sIcon} ${sText}</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#e4e7ec;">
-          <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Costo total</div><div style="font-size:17px;font-weight:700;color:#2563eb;">${c}${fmt(ct)}</div></div>
-          <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Precio actual</div><div style="font-size:17px;font-weight:700;">${c}${fmt(d.precio_actual)}</div></div>
-          <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Precio mínimo</div><div style="font-size:17px;font-weight:700;color:#dc2626;">${c}${fmt(precMin)}</div></div>
-          <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Recomendado</div><div style="font-size:17px;font-weight:700;color:#059669;">${c}${fmt(precRec)}</div></div>
-        </div>
-        <div style="padding:4px 0;">${desgRows}</div>
-        <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f0f2f5;font-size:12px;font-weight:600;"><span>COSTO TOTAL</span><span style="color:#2563eb;">${c}${fmt(ct)}</span></div>`;
-    }
-
-    bubble.innerHTML = `<div style="background:white;border-radius:14px;border:1px solid #e4e7ec;overflow:hidden;">${cardContent}</div>`;
-    wrap.appendChild(avatar);
-    wrap.appendChild(bubble);
-    container.appendChild(wrap);
-
-    addMessage('ai', '¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?');
-    conversationHistory.push({ role: 'assistant', content: '[Resumen visual del análisis]\n¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?' });
-    saveConversation();
-  } else {
-    addMessage('ai', '¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?');
-    conversationHistory.push({ role: 'assistant', content: '¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?' });
-    saveConversation();
-  }
-
-  const chatContainer = document.getElementById('chat-messages');
-  chatContainer.scrollTop = chatContainer.scrollHeight;
-};
-
-</script>
 </body>
 </html>

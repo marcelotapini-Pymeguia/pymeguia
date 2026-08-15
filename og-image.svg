@@ -1,0 +1,19 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F6E56"/>
+      <stop offset="100%" stop-color="#20A17A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1040" cy="90" r="220" fill="#ffffff" opacity="0.05"/>
+  <circle cx="120" cy="560" r="180" fill="#ffffff" opacity="0.05"/>
+
+  <rect x="100" y="220" width="64" height="64" rx="16" fill="#F4A261"/>
+  <text x="118" y="264" font-family="Poppins, Arial, sans-serif" font-size="30" fill="#1F2933">📊</text>
+
+  <text x="180" y="268" font-family="Poppins, Arial, sans-serif" font-size="44" font-weight="600" fill="#ffffff">PymeGuía</text>
+
+  <text x="100" y="360" font-family="Poppins, Arial, sans-serif" font-size="52" font-weight="600" fill="#ffffff">Tu negocio, en orden.</text>
+  <text x="100" y="410" font-family="Poppins, Arial, sans-serif" font-size="24" fill="#D6F1E6">Sabé si tu precio tiene sentido — en 15 minutos.</text>
+</svg>
