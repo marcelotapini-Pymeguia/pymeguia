@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PymeGuía — Tu negocio, en orden.</title>
 <meta name="description" content="PymeGuía calcula lo que realmente te cuesta cada venta y te dice a qué precio deberías vender. Sin planillas, sin contador.">
+<link rel="icon" type="image/png" href="assets/04_isotipo_PG.png">
+<link rel="apple-touch-icon" href="assets/04_isotipo_PG.png">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -83,19 +85,11 @@
   .logo {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    font-size: 18px;
-    color: var(--teal-dark);
   }
-  .logo-mark {
-    width: 30px; height: 30px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, var(--teal-dark), var(--teal-mid));
-    display: flex; align-items: center; justify-content: center;
-    color: white;
-    font-size: 15px;
-    flex-shrink: 0;
+  .logo-img {
+    height: 46px;
+    width: auto;
+    display: block;
   }
   .btn {
     display: inline-flex;
@@ -315,6 +309,7 @@
     margin: 0 auto;
     padding: 52px 24px;
   }
+  .cta-logo { height: 40px; width: auto; margin: 0 auto 24px; }
   .cta-final h2 { color: white; font-size: 26px; margin-bottom: 12px; }
   .cta-final p { color: rgba(255,255,255,0.85); font-size: 16px; margin-bottom: 30px; }
   .cta-final .btn-primary { background: var(--amber); color: var(--text); }
@@ -348,8 +343,7 @@
 <header>
   <div class="header-inner">
     <div class="logo">
-      <div class="logo-mark">📊</div>
-      PymeGuía
+      <img class="logo-img" src="assets/03_logo_horizontal.png" alt="PymeGuía — Tu negocio, en orden.">
     </div>
     <a class="btn btn-primary btn-header" href="/app.html">Probar gratis</a>
   </div>
@@ -447,6 +441,7 @@
 <section class="close">
   <div class="wrap">
     <div class="cta-final">
+      <img class="cta-logo" src="assets/06_logo_negativo_blanco.png" alt="PymeGuía">
       <h2>Descubrí tu precio real hoy</h2>
       <p>Sin planillas, sin contador, sin vueltas.</p>
       <a class="btn btn-primary" href="/app.html">Empezar ahora</a>
