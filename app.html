@@ -144,41 +144,6 @@
   }
   .btn-google svg { width: 20px; height: 20px; }
 
-  .api-section-auth {
-    margin-top: 24px;
-    padding-top: 24px;
-    border-top: 1px solid var(--border);
-  }
-  .api-label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 8px;
-  }
-  .api-input {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    font-family: var(--font);
-    font-size: 14px;
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s;
-    margin-bottom: 8px;
-  }
-  .api-input:focus { border-color: var(--accent); background: white; }
-  .api-input::placeholder { color: var(--text3); }
-  .api-hint {
-    font-size: 12px;
-    color: var(--text3);
-    line-height: 1.5;
-  }
-  .api-hint a { color: var(--accent); text-decoration: none; }
-
   .auth-features {
     display: flex;
     flex-direction: column;
@@ -796,20 +761,6 @@
       </svg>
       Entrar con Google
     </button>
-
-    <div class="api-section-auth">
-      <div class="api-label">API Key de Anthropic</div>
-      <input
-        type="password"
-        class="api-input"
-        id="api-key-input"
-        placeholder="sk-ant-..."
-        autocomplete="off"
-      />
-      <div class="api-hint">
-        Obtenés tu key gratis en <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Se guarda en tu cuenta y no tenés que ingresarla de nuevo.
-      </div>
-    </div>
   </div>
 </div>
 
@@ -890,7 +841,6 @@ provider.setCustomParameters({ prompt: 'select_account' });
 
 // ── State ──
 let currentUser = null;
-let apiKey = '';
 let conversationHistory = [];
 let isLoading = false;
 let currentBlock = 1;
@@ -912,7 +862,6 @@ function showScreen(id) {
 // ── Clear all session data ──
 function clearSession() {
   conversationHistory = [];
-  apiKey = '';
   currentBlock = 1;
   window.lastResultsData = null;
   const chatEl = document.getElementById('chat-messages');
@@ -940,8 +889,6 @@ async function loadAndShowUserData() {
     const userDoc = await getDoc(userDocRef);
     if (userDoc.exists()) {
       const data = userDoc.data();
-      apiKey = data.apiKey || '';
-      if (!apiKey) { showScreen('auth-screen'); return; }
       if (data.conversationHistory && data.conversationHistory.length > 0) {
         conversationHistory = data.conversationHistory;
         currentBlock = data.currentBlock || 1;
@@ -972,26 +919,17 @@ function setUserAvatar() {
 
 // ── Login with Google ──
 window.loginWithGoogle = async function() {
-  const key = document.getElementById('api-key-input').value.trim();
-  if (!key || !key.startsWith('sk-ant-')) {
-    alert('Por favor ingresá una API key válida de Anthropic (empieza con sk-ant-)');
-    return;
-  }
-
   loginInProgress = true;
 
   try {
     const result = await signInWithPopup(auth, provider);
     currentUser = result.user;
     clearSession();
-    apiKey = key;
 
     const userDocRef = doc(db, 'users', currentUser.uid);
     const existingDoc = await getDoc(userDocRef);
 
     if (existingDoc.exists()) {
-      // Existing user — only update API key, preserve their conversation
-      await updateDoc(userDocRef, { apiKey: key });
       const data = existingDoc.data();
       if (data.conversationHistory && data.conversationHistory.length > 0) {
         conversationHistory = data.conversationHistory;
@@ -1010,7 +948,6 @@ window.loginWithGoogle = async function() {
       await setDoc(userDocRef, {
         email: currentUser.email,
         name: currentUser.displayName,
-        apiKey: key,
         createdAt: new Date().toISOString(),
         conversationHistory: [],
         currentBlock: 1
@@ -1042,9 +979,7 @@ window.showMenu = function() {
 };
 
 window.newConversation = function() {
-  const savedKey = apiKey;
   clearSession();
-  apiKey = savedKey;
   saveConversation();
   showScreen('app-screen');
   initChat();
@@ -1419,10 +1354,10 @@ function getFriendlyError(msg) {
     return 'Demasiadas consultas en poco tiempo. Esperá unos segundos y volvé a intentarlo. 🙏';
   }
   if (msg.includes('invalid') || msg.includes('api_key')) {
-    return 'La API key no es válida. Verificá que esté bien copiada en console.anthropic.com';
+    return 'Hay un problema con la configuración del servicio. Contactá al administrador del sitio.';
   }
   if (msg.includes('insufficient') || msg.includes('credit')) {
-    return 'Te quedaste sin créditos en Anthropic. Recargá desde console.anthropic.com → Billing.';
+    return 'El servicio se quedó sin créditos disponibles. Contactá al administrador del sitio.';
   }
   return 'Hubo un error de conexión. Verificá tu internet y volvé a intentarlo.';
 }
@@ -1441,18 +1376,15 @@ function detectAndUpdateBlock(msg) {
 }
 
 // ── API call ──
+// La llamada real a Anthropic ocurre en el servidor (netlify/functions/chat.js),
+// que es el único lugar donde vive la API key (process.env.ANTHROPIC_API_KEY).
 async function callAI(messages) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetch('/.netlify/functions/chat', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 1024,
       system: buildSystemPrompt(),
       messages: messages
     })
