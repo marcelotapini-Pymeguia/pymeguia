@@ -86,21 +86,12 @@
   .auth-logo {
     display: flex;
     align-items: center;
-    gap: 10px;
     margin-bottom: 32px;
   }
-  .auth-logo-icon {
-    width: 40px; height: 40px;
-    background: var(--accent);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-  }
-  .auth-logo-text {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.02em;
+  .auth-logo-img {
+    height: 62px;
+    width: auto;
+    display: block;
   }
 
   .auth-title {
@@ -730,8 +721,7 @@
 <div id="auth-screen" class="screen hidden">
   <div class="auth-card">
     <div class="auth-logo">
-      <div class="auth-logo-icon">📊</div>
-      <div class="auth-logo-text">PymeGuía</div>
+      <img class="auth-logo-img" src="assets/03_logo_horizontal.png" alt="PymeGuía — Tu negocio, en orden.">
     </div>
 
     <h1 class="auth-title">Descubrí si tu precio es correcto</h1>
