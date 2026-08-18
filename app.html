@@ -1000,8 +1000,30 @@ function restoreConversation(history) {
   const container = document.getElementById('chat-messages');
   container.innerHTML = '';
   history.forEach(msg => {
-    if (msg.role === 'user' || msg.role === 'assistant') {
-      addMessage(msg.role === 'assistant' ? 'ai' : 'user', msg.content);
+    if (msg.role === 'user') {
+      addMessage('user', msg.content);
+    } else if (msg.role === 'assistant') {
+      if (msg.content.includes('[RESULTADOS_LISTOS]')) {
+        const parts = msg.content.split('[RESULTADOS_LISTOS]');
+        const beforeText = parts[0].trim();
+        if (beforeText) addMessage('ai', beforeText);
+        try {
+          let jsonStr = (parts[1] || '').trim().replace(/```json/g, '').replace(/```/g, '').trim();
+          const startIdx = jsonStr.indexOf('{');
+          const endIdx = jsonStr.lastIndexOf('}');
+          if (startIdx !== -1 && endIdx !== -1) jsonStr = jsonStr.substring(startIdx, endIdx + 1);
+          const data = JSON.parse(jsonStr);
+          window.lastResultsData = data;
+          appendResultCard(data);
+        } catch(e) {
+          console.error('Error restaurando resultados:', e);
+        }
+      } else if (msg.content.startsWith('[Resumen visual del análisis]')) {
+        const rest = msg.content.replace('[Resumen visual del análisis]', '').trim();
+        if (rest) addMessage('ai', rest);
+      } else {
+        addMessage('ai', msg.content);
+      }
     }
   });
 }
@@ -1679,29 +1701,8 @@ function calcPrecioRec(desgloseItems, costoTotal, margenPct) {
   return { prec, costoReal: costoTotal };
 }
 
-window.continueChat = function() {
-  showScreen('app-screen');
-  updateProgress(currentBlock);
-
-  if (window.lastResultsData) {
-    const d = window.lastResultsData;
+function buildResultCardHTML(d) {
     const c = d.moneda || '€';
-    const container = document.getElementById('chat-messages');
-
-    const wrap = document.createElement('div');
-    wrap.className = 'msg-wrap ai';
-    wrap.style.maxWidth = '100%';
-    const avatar = document.createElement('div');
-    avatar.className = 'msg-avatar ai';
-    avatar.textContent = 'PG';
-    const bubble = document.createElement('div');
-    bubble.className = 'msg-bubble';
-    bubble.style.padding = '0';
-    bubble.style.maxWidth = '440px';
-    bubble.style.width = '100%';
-    bubble.style.overflow = 'hidden';
-    bubble.style.borderRadius = '14px';
-
     let cardContent = '';
     if (d.modo === 'multi' && d.productos) {
       let prodRows = d.productos.map(p => {
@@ -1760,12 +1761,36 @@ window.continueChat = function() {
         <div style="padding:4px 0;">${desgRows}</div>
         <div style="display:flex;justify-content:space-between;padding:6px 14px;background:#f0f2f5;font-size:12px;font-weight:600;"><span>COSTO TOTAL</span><span style="color:#2563eb;">${c}${fmt(ct)}</span></div>`;
     }
+    return cardContent;
+}
 
-    bubble.innerHTML = `<div style="background:white;border-radius:14px;border:1px solid #e4e7ec;overflow:hidden;">${cardContent}</div>`;
+function appendResultCard(d) {
+    const container = document.getElementById('chat-messages');
+    const wrap = document.createElement('div');
+    wrap.className = 'msg-wrap ai';
+    wrap.style.maxWidth = '100%';
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar ai';
+    avatar.textContent = 'PG';
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.style.padding = '0';
+    bubble.style.maxWidth = '440px';
+    bubble.style.width = '100%';
+    bubble.style.overflow = 'hidden';
+    bubble.style.borderRadius = '14px';
+    bubble.innerHTML = `<div style="background:white;border-radius:14px;border:1px solid #e4e7ec;overflow:hidden;">${buildResultCardHTML(d)}</div>`;
     wrap.appendChild(avatar);
     wrap.appendChild(bubble);
     container.appendChild(wrap);
+}
 
+window.continueChat = function() {
+  showScreen('app-screen');
+  updateProgress(currentBlock);
+
+  if (window.lastResultsData) {
+    appendResultCard(window.lastResultsData);
     addMessage('ai', '¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?');
     conversationHistory.push({ role: 'assistant', content: '[Resumen visual del análisis]\n¿Querés ajustar algún dato, analizar otro producto o tenés alguna pregunta?' });
     saveConversation();
