@@ -182,10 +182,13 @@
     z-index: 10;
   }
   .header-logo {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--accent);
-    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+  }
+  .header-logo img {
+    height: 26px;
+    width: auto;
+    display: block;
   }
   .header-center {
     flex: 1;
@@ -285,10 +288,15 @@
     margin-top: 2px;
   }
   .msg-avatar.ai {
-    background: var(--accent);
-    color: white;
-    font-weight: 600;
-    font-size: 11px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 5px;
+  }
+  .msg-avatar.ai img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
   }
   .msg-avatar.user {
     background: var(--surface2);
@@ -445,9 +453,13 @@
     z-index: 10;
   }
   .results-header-logo {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--accent);
+    display: flex;
+    align-items: center;
+  }
+  .results-header-logo img {
+    height: 26px;
+    width: auto;
+    display: block;
   }
 
   .results-body {
@@ -759,7 +771,7 @@
 <!-- APP CHAT -->
 <div id="app-screen" class="screen hidden" style="display:none;">
   <div class="app-header">
-    <div class="header-logo">PymeGuía</div>
+    <div class="header-logo"><img src="assets/03_logo_horizontal.png" alt="PymeGuía"></div>
     <div class="header-center">
       <div class="progress-bar">
         <div class="progress-fill" id="progress-fill"></div>
@@ -803,7 +815,7 @@
 <!-- RESULTS -->
 <div id="results-screen" class="screen hidden">
   <div class="results-header-bar">
-    <div class="results-header-logo">PymeGuía</div>
+    <div class="results-header-logo"><img src="assets/03_logo_horizontal.png" alt="PymeGuía"></div>
     <button class="btn-secondary" onclick="showMenu()" style="padding:8px 14px;font-size:13px;">···</button>
   </div>
   <div class="results-body" id="results-body"></div>
@@ -1470,7 +1482,8 @@ function addMessage(role, text, isError = false) {
 
   const avatar = document.createElement('div');
   avatar.className = `msg-avatar ${role}`;
-  avatar.textContent = role === 'ai' ? 'PG' : '👤';
+  if (role === 'ai') avatar.innerHTML = '<img src="assets/04_isotipo_PG.png" alt="PymeGuía">';
+  else avatar.textContent = '👤';
 
   const bubble = document.createElement('div');
   bubble.className = `msg-bubble ${isError ? 'msg-error' : ''}`;
@@ -1492,7 +1505,7 @@ function showTyping() {
 
   const avatar = document.createElement('div');
   avatar.className = 'msg-avatar ai';
-  avatar.textContent = 'PG';
+  avatar.innerHTML = '<img src="assets/04_isotipo_PG.png" alt="PymeGuía">';
 
   const bubble = document.createElement('div');
   bubble.className = 'msg-bubble';
@@ -1771,7 +1784,7 @@ function appendResultCard(d) {
     wrap.style.maxWidth = '100%';
     const avatar = document.createElement('div');
     avatar.className = 'msg-avatar ai';
-    avatar.textContent = 'PG';
+    avatar.innerHTML = '<img src="assets/04_isotipo_PG.png" alt="PymeGuía">';
     const bubble = document.createElement('div');
     bubble.className = 'msg-bubble';
     bubble.style.padding = '0';
