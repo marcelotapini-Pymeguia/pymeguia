@@ -39,10 +39,11 @@
     color: var(--text);
     font-family: var(--font);
     min-height: 100vh;
+    min-height: var(--app-height, 100dvh);
     -webkit-font-smoothing: antialiased;
   }
 
-  .screen { min-height: 100vh; }
+  .screen { min-height: 100vh; min-height: var(--app-height, 100dvh); }
   .screen.hidden { display: none !important; }
 
   /* ══════════════════════════════════════
@@ -166,6 +167,7 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    height: var(--app-height, 100dvh);
     background: var(--bg);
   }
 
@@ -850,6 +852,21 @@ let isLoading = false;
 let currentBlock = 1;
 let loginInProgress = false;
 
+// ── Alto real de pantalla (evita que el teclado móvil tape el input) ──
+// 100vh/100dvh no siempre se achican cuando aparece el teclado en Android/iOS,
+// así que seguimos visualViewport (el área realmente visible) con JS.
+function syncAppHeight() {
+  const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  document.documentElement.style.setProperty('--app-height', vh + 'px');
+}
+syncAppHeight();
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', syncAppHeight);
+  window.visualViewport.addEventListener('scroll', syncAppHeight);
+} else {
+  window.addEventListener('resize', syncAppHeight);
+}
+
 // ── Screen management ──
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => {
@@ -1428,6 +1445,7 @@ async function callAI(messages) {
 // ── Voice input ──
 let recognition = null;
 let isRecording = false;
+let voiceStoppedManually = false;
 
 window.toggleVoice = function() {
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -1436,6 +1454,7 @@ window.toggleVoice = function() {
   }
 
   if (isRecording) {
+    voiceStoppedManually = true;
     recognition.stop();
     return;
   }
@@ -1443,8 +1462,11 @@ window.toggleVoice = function() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SpeechRecognition();
   recognition.lang = 'es-AR';
-  recognition.continuous = false;
-  recognition.interimResults = false;
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  let finalTranscript = '';
+  voiceStoppedManually = false;
 
   recognition.onstart = () => {
     isRecording = true;
@@ -1453,19 +1475,34 @@ window.toggleVoice = function() {
   };
 
   recognition.onresult = (e) => {
-    const transcript = e.results[0][0].transcript;
+    let interimTranscript = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const transcript = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        finalTranscript += transcript + ' ';
+      } else {
+        interimTranscript += transcript;
+      }
+    }
     const input = document.getElementById('chat-input');
-    input.value = transcript;
+    input.value = (finalTranscript + interimTranscript).trim();
     autoResize(input);
   };
 
   recognition.onend = () => {
+    // Algunos navegadores cortan el reconocimiento solos (silencio breve, timeout
+    // interno) aunque sea "continuous". Si el usuario no lo detuvo a propósito,
+    // lo reiniciamos para que siga escuchando la frase completa.
+    if (!voiceStoppedManually) {
+      try { recognition.start(); return; } catch(e) { /* si falla, cerramos normalmente */ }
+    }
     isRecording = false;
     document.getElementById('voice-btn').classList.remove('recording');
     document.getElementById('chat-input').placeholder = 'Escribí tu respuesta...';
   };
 
-  recognition.onerror = () => {
+  recognition.onerror = (e) => {
+    if (e.error === 'no-speech' || e.error === 'aborted') return; // se resuelve en onend
     isRecording = false;
     document.getElementById('voice-btn').classList.remove('recording');
     document.getElementById('chat-input').placeholder = 'Escribí tu respuesta...';
