@@ -1489,12 +1489,30 @@ window.toggleVoice = function() {
     autoResize(input);
   };
 
+  function tryRestart(attempt) {
+    if (voiceStoppedManually) return;
+    try {
+      recognition.start();
+    } catch(e) {
+      // Android a veces tarda unos instantes en liberar la sesión anterior
+      // (InvalidStateError si arrancamos demasiado rápido) — reintentamos.
+      if (attempt < 3) {
+        setTimeout(() => tryRestart(attempt + 1), 150);
+      } else {
+        isRecording = false;
+        document.getElementById('voice-btn').classList.remove('recording');
+        document.getElementById('chat-input').placeholder = 'Escribí tu respuesta...';
+      }
+    }
+  }
+
   recognition.onend = () => {
     // Algunos navegadores cortan el reconocimiento solos (silencio breve, timeout
     // interno) aunque sea "continuous". Si el usuario no lo detuvo a propósito,
     // lo reiniciamos para que siga escuchando la frase completa.
     if (!voiceStoppedManually) {
-      try { recognition.start(); return; } catch(e) { /* si falla, cerramos normalmente */ }
+      tryRestart(0);
+      return;
     }
     isRecording = false;
     document.getElementById('voice-btn').classList.remove('recording');
