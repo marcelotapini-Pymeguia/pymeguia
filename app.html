@@ -1442,92 +1442,102 @@ async function callAI(messages) {
   return data.content[0].text;
 }
 
-// ── Voice input ──
-let recognition = null;
+// ── Voice input (grabación + transcripción server-side) ──
+let mediaRecorder = null;
+let audioChunks = [];
 let isRecording = false;
-let voiceStoppedManually = false;
 
-window.toggleVoice = function() {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    alert('Tu navegador no soporta reconocimiento de voz. Usá Chrome o Edge.');
-    return;
-  }
-
+window.toggleVoice = async function() {
   if (isRecording) {
-    voiceStoppedManually = true;
-    recognition.stop();
+    mediaRecorder.stop();
     return;
   }
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRecognition();
-  recognition.lang = 'es-AR';
-  recognition.continuous = true;
-  recognition.interimResults = true;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert('Tu navegador no soporta grabación de audio.');
+    return;
+  }
 
-  let finalTranscript = '';
-  voiceStoppedManually = false;
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch(e) {
+    alert('No se pudo acceder al micrófono. Revisá los permisos del navegador.');
+    return;
+  }
 
-  recognition.onstart = () => {
+  audioChunks = [];
+  const mimeType = MediaRecorder.isTypeSupported('audio/webm')
+    ? 'audio/webm'
+    : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '');
+  mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data.size > 0) audioChunks.push(e.data);
+  };
+
+  mediaRecorder.onstart = () => {
     isRecording = true;
     document.getElementById('voice-btn').classList.add('recording');
     document.getElementById('chat-input').placeholder = '🎤 Escuchando...';
   };
 
-  recognition.onresult = (e) => {
-    let interimTranscript = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const transcript = e.results[i][0].transcript;
-      if (e.results[i].isFinal) {
-        finalTranscript += transcript + ' ';
-      } else {
-        interimTranscript += transcript;
-      }
-    }
+  mediaRecorder.onstop = async () => {
+    isRecording = false;
+    document.getElementById('voice-btn').classList.remove('recording');
+    stream.getTracks().forEach(t => t.stop());
+
+    const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
     const input = document.getElementById('chat-input');
-    input.value = (finalTranscript + interimTranscript).trim();
-    autoResize(input);
-  };
-
-  function tryRestart(attempt) {
-    if (voiceStoppedManually) return;
-    try {
-      recognition.start();
-    } catch(e) {
-      // Android a veces tarda unos instantes en liberar la sesión anterior
-      // (InvalidStateError si arrancamos demasiado rápido) — reintentamos.
-      if (attempt < 3) {
-        setTimeout(() => tryRestart(attempt + 1), 150);
-      } else {
-        isRecording = false;
-        document.getElementById('voice-btn').classList.remove('recording');
-        document.getElementById('chat-input').placeholder = 'Escribí tu respuesta...';
-      }
-    }
-  }
-
-  recognition.onend = () => {
-    // Algunos navegadores cortan el reconocimiento solos (silencio breve, timeout
-    // interno) aunque sea "continuous". Si el usuario no lo detuvo a propósito,
-    // lo reiniciamos para que siga escuchando la frase completa.
-    if (!voiceStoppedManually) {
-      tryRestart(0);
+    if (blob.size === 0) {
+      input.placeholder = 'Escribí tu respuesta...';
       return;
     }
-    isRecording = false;
-    document.getElementById('voice-btn').classList.remove('recording');
-    document.getElementById('chat-input').placeholder = 'Escribí tu respuesta...';
+
+    input.placeholder = 'Transcribiendo...';
+    try {
+      const text = await transcribeAudio(blob);
+      if (text) {
+        input.value = (input.value ? input.value + ' ' : '') + text;
+        autoResize(input);
+      }
+    } catch(e) {
+      console.error('Transcription error:', e);
+      alert('No se pudo transcribir el audio. Probá de nuevo o escribí tu respuesta.');
+    }
+    input.placeholder = 'Escribí tu respuesta...';
   };
 
-  recognition.onerror = (e) => {
-    if (e.error === 'no-speech' || e.error === 'aborted') return; // se resuelve en onend
-    isRecording = false;
-    document.getElementById('voice-btn').classList.remove('recording');
-    document.getElementById('chat-input').placeholder = 'Escribí tu respuesta...';
-  };
-
-  recognition.start();
+  mediaRecorder.start();
+  // Corte de seguridad: evita audios tan largos que superen el límite de tamaño
+  // de la función serverless.
+  setTimeout(() => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+  }, 120000);
 };
+
+async function transcribeAudio(blob) {
+  const base64 = await blobToBase64(blob);
+  const response = await fetch('/.netlify/functions/transcribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ audio: base64, mimeType: blob.type })
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error?.message || 'Error de transcripción');
+  }
+  return (data.text || '').trim();
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 
 // ── Voice input ──
 function addMessage(role, text, isError = false) {
