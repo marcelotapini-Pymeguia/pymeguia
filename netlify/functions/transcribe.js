@@ -17,27 +17,17 @@ exports.handler = async (event) => {
     };
   }
 
-  let payload;
-  try {
-    payload = JSON.parse(event.body || '{}');
-  } catch (e) {
+  if (!event.body) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: { message: 'Body inválido, se esperaba JSON.' } })
-    };
-  }
-
-  const { audio, mimeType } = payload;
-  if (!audio) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: { message: '"audio" (base64) es obligatorio.' } })
+      body: JSON.stringify({ error: { message: 'Falta el audio en el body.' } })
     };
   }
 
   try {
-    const audioBuffer = Buffer.from(audio, 'base64');
-    const type = mimeType || 'audio/webm';
+    const audioBuffer = Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'utf8');
+    const contentType = event.headers['content-type'] || event.headers['Content-Type'] || 'audio/webm';
+    const type = contentType.split(';')[0].trim();
     const ext = type.includes('mp4') ? 'mp4' : type.includes('ogg') ? 'ogg' : 'webm';
 
     const formData = new FormData();
