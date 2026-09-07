@@ -1447,6 +1447,14 @@ let mediaRecorder = null;
 let audioChunks = [];
 let isRecording = false;
 
+const MIC_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+    <line x1="12" y1="19" x2="12" y2="23"/>
+    <line x1="8" y1="23" x2="16" y2="23"/>
+  </svg>`;
+const SEND_ICON = `<svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>`;
+
 window.toggleVoice = async function() {
   if (isRecording) {
     mediaRecorder.stop();
@@ -1478,13 +1486,19 @@ window.toggleVoice = async function() {
 
   mediaRecorder.onstart = () => {
     isRecording = true;
-    document.getElementById('voice-btn').classList.add('recording');
-    document.getElementById('chat-input').placeholder = '🎤 Escuchando...';
+    const btn = document.getElementById('voice-btn');
+    btn.classList.add('recording');
+    btn.innerHTML = SEND_ICON;
+    btn.title = 'Terminar y enviar';
+    document.getElementById('chat-input').placeholder = '🎤 Escuchando... tocá para enviar';
   };
 
   mediaRecorder.onstop = async () => {
     isRecording = false;
-    document.getElementById('voice-btn').classList.remove('recording');
+    const btn = document.getElementById('voice-btn');
+    btn.classList.remove('recording');
+    btn.innerHTML = MIC_ICON;
+    btn.title = 'Hablar';
     stream.getTracks().forEach(t => t.stop());
 
     const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
@@ -1495,17 +1509,25 @@ window.toggleVoice = async function() {
     }
 
     input.placeholder = 'Transcribiendo...';
+    input.disabled = true;
+    btn.disabled = true;
     try {
       const text = await transcribeAudio(blob);
+      input.disabled = false;
+      btn.disabled = false;
+      input.placeholder = 'Escribí tu respuesta...';
       if (text) {
         input.value = (input.value ? input.value + ' ' : '') + text;
         autoResize(input);
+        window.sendMessage();
       }
     } catch(e) {
       console.error('Transcription error:', e);
+      input.disabled = false;
+      btn.disabled = false;
+      input.placeholder = 'Escribí tu respuesta...';
       alert('No se pudo transcribir el audio. Probá de nuevo o escribí tu respuesta.');
     }
-    input.placeholder = 'Escribí tu respuesta...';
   };
 
   mediaRecorder.start();
