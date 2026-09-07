@@ -1,5 +1,5 @@
-// Proxy server-side hacia la API de transcripcion de OpenAI.
-// La API key vive solo aca (process.env.OPENAI_API_KEY), nunca en el cliente.
+// Proxy server-side hacia la API de transcripcion de Groq (compatible con OpenAI).
+// La API key vive solo aca (process.env.GROQ_API_KEY), nunca en el cliente.
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -9,59 +9,49 @@ exports.handler = async (event) => {
     };
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: { message: 'Falta configurar OPENAI_API_KEY en el servidor.' } })
+      body: JSON.stringify({ error: { message: 'Falta configurar GROQ_API_KEY en el servidor.' } })
     };
   }
 
-  let payload;
-  try {
-    payload = JSON.parse(event.body || '{}');
-  } catch (e) {
+  if (!event.body) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: { message: 'Body inválido, se esperaba JSON.' } })
-    };
-  }
-
-  const { audio, mimeType } = payload;
-  if (!audio) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: { message: '"audio" (base64) es obligatorio.' } })
+      body: JSON.stringify({ error: { message: 'Falta el audio en el body.' } })
     };
   }
 
   try {
-    const audioBuffer = Buffer.from(audio, 'base64');
-    const type = mimeType || 'audio/webm';
+    const audioBuffer = Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'utf8');
+    const contentType = event.headers['content-type'] || event.headers['Content-Type'] || 'audio/webm';
+    const type = contentType.split(';')[0].trim();
     const ext = type.includes('mp4') ? 'mp4' : type.includes('ogg') ? 'ogg' : 'webm';
 
     const formData = new FormData();
     formData.append('file', new Blob([audioBuffer], { type }), `audio.${ext}`);
-    formData.append('model', 'gpt-4o-mini-transcribe');
+    formData.append('model', 'whisper-large-v3-turbo');
     formData.append('language', 'es');
 
-    const openaiRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    const groqRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}` },
       body: formData
     });
 
-    const data = await openaiRes.json();
+    const data = await groqRes.json();
 
     return {
-      statusCode: openaiRes.status,
+      statusCode: groqRes.status,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     };
   } catch (e) {
     return {
       statusCode: 502,
-      body: JSON.stringify({ error: { message: 'Error contactando a OpenAI: ' + e.message } })
+      body: JSON.stringify({ error: { message: 'Error contactando a Groq: ' + e.message } })
     };
   }
 };

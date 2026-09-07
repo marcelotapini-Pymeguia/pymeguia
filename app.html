@@ -1442,92 +1442,118 @@ async function callAI(messages) {
   return data.content[0].text;
 }
 
-// ── Voice input ──
-let recognition = null;
+// ── Voice input (grabación + transcripción server-side) ──
+let mediaRecorder = null;
+let audioChunks = [];
 let isRecording = false;
-let voiceStoppedManually = false;
 
-window.toggleVoice = function() {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    alert('Tu navegador no soporta reconocimiento de voz. Usá Chrome o Edge.');
-    return;
-  }
+const MIC_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+    <line x1="12" y1="19" x2="12" y2="23"/>
+    <line x1="8" y1="23" x2="16" y2="23"/>
+  </svg>`;
+const SEND_ICON = `<svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>`;
 
+window.toggleVoice = async function() {
   if (isRecording) {
-    voiceStoppedManually = true;
-    recognition.stop();
+    mediaRecorder.stop();
     return;
   }
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRecognition();
-  recognition.lang = 'es-AR';
-  recognition.continuous = true;
-  recognition.interimResults = true;
-
-  let finalTranscript = '';
-  voiceStoppedManually = false;
-
-  recognition.onstart = () => {
-    isRecording = true;
-    document.getElementById('voice-btn').classList.add('recording');
-    document.getElementById('chat-input').placeholder = '🎤 Escuchando...';
-  };
-
-  recognition.onresult = (e) => {
-    let interimTranscript = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const transcript = e.results[i][0].transcript;
-      if (e.results[i].isFinal) {
-        finalTranscript += transcript + ' ';
-      } else {
-        interimTranscript += transcript;
-      }
-    }
-    const input = document.getElementById('chat-input');
-    input.value = (finalTranscript + interimTranscript).trim();
-    autoResize(input);
-  };
-
-  function tryRestart(attempt) {
-    if (voiceStoppedManually) return;
-    try {
-      recognition.start();
-    } catch(e) {
-      // Android a veces tarda unos instantes en liberar la sesión anterior
-      // (InvalidStateError si arrancamos demasiado rápido) — reintentamos.
-      if (attempt < 3) {
-        setTimeout(() => tryRestart(attempt + 1), 150);
-      } else {
-        isRecording = false;
-        document.getElementById('voice-btn').classList.remove('recording');
-        document.getElementById('chat-input').placeholder = 'Escribí tu respuesta...';
-      }
-    }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    alert('Tu navegador no soporta grabación de audio.');
+    return;
   }
 
-  recognition.onend = () => {
-    // Algunos navegadores cortan el reconocimiento solos (silencio breve, timeout
-    // interno) aunque sea "continuous". Si el usuario no lo detuvo a propósito,
-    // lo reiniciamos para que siga escuchando la frase completa.
-    if (!voiceStoppedManually) {
-      tryRestart(0);
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch(e) {
+    alert('No se pudo acceder al micrófono. Revisá los permisos del navegador.');
+    return;
+  }
+
+  audioChunks = [];
+  const mimeType = MediaRecorder.isTypeSupported('audio/webm')
+    ? 'audio/webm'
+    : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '');
+  mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data.size > 0) audioChunks.push(e.data);
+  };
+
+  mediaRecorder.onstart = () => {
+    isRecording = true;
+    const btn = document.getElementById('voice-btn');
+    btn.classList.add('recording');
+    btn.innerHTML = SEND_ICON;
+    btn.title = 'Terminar y enviar';
+    document.getElementById('send-btn').style.display = 'none';
+    document.getElementById('chat-input').placeholder = '🎤 Escuchando... tocá para enviar';
+  };
+
+  mediaRecorder.onstop = async () => {
+    isRecording = false;
+    const btn = document.getElementById('voice-btn');
+    btn.classList.remove('recording');
+    btn.innerHTML = MIC_ICON;
+    btn.title = 'Hablar';
+    document.getElementById('send-btn').style.display = '';
+    stream.getTracks().forEach(t => t.stop());
+
+    const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+    const input = document.getElementById('chat-input');
+    if (blob.size === 0) {
+      input.placeholder = 'Escribí tu respuesta...';
       return;
     }
-    isRecording = false;
-    document.getElementById('voice-btn').classList.remove('recording');
-    document.getElementById('chat-input').placeholder = 'Escribí tu respuesta...';
+
+    input.placeholder = 'Transcribiendo...';
+    input.disabled = true;
+    btn.disabled = true;
+    try {
+      const text = await transcribeAudio(blob);
+      input.disabled = false;
+      btn.disabled = false;
+      input.placeholder = 'Escribí tu respuesta...';
+      if (text) {
+        input.value = (input.value ? input.value + ' ' : '') + text;
+        autoResize(input);
+        window.sendMessage();
+      }
+    } catch(e) {
+      console.error('Transcription error:', e);
+      input.disabled = false;
+      btn.disabled = false;
+      input.placeholder = 'Escribí tu respuesta...';
+      alert('No se pudo transcribir el audio. Probá de nuevo o escribí tu respuesta.');
+    }
   };
 
-  recognition.onerror = (e) => {
-    if (e.error === 'no-speech' || e.error === 'aborted') return; // se resuelve en onend
-    isRecording = false;
-    document.getElementById('voice-btn').classList.remove('recording');
-    document.getElementById('chat-input').placeholder = 'Escribí tu respuesta...';
-  };
-
-  recognition.start();
+  mediaRecorder.start();
+  // Corte de seguridad: evita audios tan largos que superen el límite de tamaño
+  // de la función serverless.
+  setTimeout(() => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+  }, 120000);
 };
+
+async function transcribeAudio(blob) {
+  // Se manda el audio binario directo (sin envolverlo en base64+JSON) para
+  // ahorrar el tiempo de conversión y el ~33% de peso extra que agrega base64.
+  const response = await fetch('/.netlify/functions/transcribe', {
+    method: 'POST',
+    headers: { 'Content-Type': blob.type || 'audio/webm' },
+    body: blob
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error?.message || 'Error de transcripción');
+  }
+  return (data.text || '').trim();
+}
 
 // ── Voice input ──
 function addMessage(role, text, isError = false) {
