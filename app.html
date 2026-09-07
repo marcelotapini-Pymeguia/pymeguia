@@ -1490,6 +1490,7 @@ window.toggleVoice = async function() {
     btn.classList.add('recording');
     btn.innerHTML = SEND_ICON;
     btn.title = 'Terminar y enviar';
+    document.getElementById('send-btn').style.display = 'none';
     document.getElementById('chat-input').placeholder = '🎤 Escuchando... tocá para enviar';
   };
 
@@ -1499,6 +1500,7 @@ window.toggleVoice = async function() {
     btn.classList.remove('recording');
     btn.innerHTML = MIC_ICON;
     btn.title = 'Hablar';
+    document.getElementById('send-btn').style.display = '';
     stream.getTracks().forEach(t => t.stop());
 
     const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
