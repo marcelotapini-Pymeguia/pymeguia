@@ -1,2 +1,8 @@
 [functions]
   directory = "netlify/functions"
+
+[[redirects]]
+  from = "/devolucion"
+  to = "https://claude.ai/code/artifact/d441da1b-c62d-4741-8bab-eaa9c97561a7"
+  status = 302
+  force = true
