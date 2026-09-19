@@ -1307,7 +1307,7 @@ window.sendMessage = async function() {
   showTyping();
 
   try {
-    const response = await callAI(conversationHistory);
+    const response = neutralizeVoseo(await callAI(conversationHistory));
     hideTyping();
 
     if (response.includes('[RESULTADOS_LISTOS]')) {
@@ -1337,7 +1337,7 @@ window.sendMessage = async function() {
         // Ask AI to reformat
         conversationHistory.push({ role: 'assistant', content: response });
         conversationHistory.push({ role: 'user', content: 'Por favor muestra los resultados finales.' });
-        const retry = await callAI(conversationHistory);
+        const retry = neutralizeVoseo(await callAI(conversationHistory));
         hideTyping();
         if (retry.includes('[RESULTADOS_LISTOS]')) {
           const retryParts = retry.split('[RESULTADOS_LISTOS]');
@@ -1419,6 +1419,77 @@ function detectAndUpdateBlock(msg) {
   } else if (lower.includes('materia prima') || lower.includes('insumo') || lower.includes('cuánto tardas')) {
     updateProgress(2);
   }
+}
+
+// ── Red de seguridad anti-voseo ──
+// El system prompt le pide a la IA que hable siempre de "tú", pero al ser un
+// modelo generativo no es 100% determinístico: en respuestas mas libres
+// (ej. el parrafo conversacional del margen) puede colarse alguna forma de
+// voseo igual. Esta funcion corrige esos casos antes de mostrar el texto.
+const VOSEO_MAP = {
+  'sos':'eres',
+  'tenés':'tienes','tenes':'tienes',
+  'podés':'puedes','podes':'puedes',
+  'querés':'quieres','queres':'quieres',
+  'vendés':'vendes',
+  'usás':'usas',
+  'hacés':'haces',
+  'pagás':'pagas',
+  'sabés':'sabes',
+  'pensás':'piensas',
+  'decís':'dices',
+  'seguís':'sigues',
+  'escribís':'escribes',
+  'mostrás':'muestras',
+  'comprás':'compras',
+  'cobrás':'cobras',
+  'ganás':'ganas',
+  'perdés':'pierdes',
+  'mantenés':'mantienes',
+  'aceptás':'aceptas',
+  'confirmás':'confirmas',
+  'trabajás':'trabajas',
+  'gastás':'gastas',
+  'recordás':'recuerdas',
+  'incluís':'incluyes',
+  'convertís':'conviertes',
+  'preferís':'prefieres',
+  'operás':'operas',
+  'fabricás':'fabricas',
+  'revendés':'revendes',
+  'ofrecés':'ofreces',
+  'empezás':'empiezas',
+  'alquilás':'alquilas',
+  'manejás':'manejas',
+  'sugerís':'sugieres',
+  'enviás':'envías',
+  'tardás':'tardas',
+  'retenés':'retienes',
+  'necesitás':'necesitas',
+  'entendés':'entiendes',
+  'preguntás':'preguntas',
+  // imperativos de voseo sueltos
+  'identificá':'identifica','clasificá':'clasifica','confirmá':'confirma','seguí':'sigue',
+  'continuá':'continúa','completá':'completa','extraé':'extrae','mencioná':'menciona',
+  'sugerí':'sugiere','aceptá':'acepta','usá':'usa','terminá':'termina','escribí':'escribe',
+  'dividí':'divide','sumá':'suma','revisá':'revisa','fijate':'fíjate','contame':'cuéntame',
+  'decime':'dime','avisame':'avísame','mandame':'mándame','mostrame':'muéstrame',
+  'dejame':'déjame','pasame':'pásame'
+};
+
+function neutralizeVoseo(text) {
+  if (!text) return text;
+  let out = text;
+  for (const [vos, tu] of Object.entries(VOSEO_MAP)) {
+    const re = new RegExp('\\b' + vos + '\\b', 'gi');
+    out = out.replace(re, (match) => {
+      if (match[0] !== match[0].toLowerCase()) return tu.charAt(0).toUpperCase() + tu.slice(1);
+      return tu;
+    });
+  }
+  out = out.replace(/\b(para|a|con|sin|por|como)\s+vos\b/gi, (m, prep) => `${prep} ti`);
+  out = out.replace(/\bvos\b/gi, (m) => (m[0] !== m[0].toLowerCase() ? 'Tú' : 'tú'));
+  return out;
 }
 
 // ── API call ──
