@@ -1074,6 +1074,9 @@ function buildSystemPrompt() {
 FECHA ACTUAL: ${cm} de ${cy}
 MESES DE REFERENCIA PARA HISTORIAL: ${prev3[0]}, ${prev3[1]} y ${prev3[2]}
 
+## IDIOMA — OBLIGATORIO, SIN EXCEPCIONES
+Te diriges al usuario SIEMPRE de "tú", en español neutro. NUNCA uses voseo (rioplatense/argentino), sin importar el país del usuario ni el ejemplo que sigas de este prompt. Ejemplos de formas PROHIBIDAS y su reemplazo correcto: "tenés"→"tienes", "sos"→"eres", "podés"→"puedes", "vendés"→"vendes", "querés"→"quieres", "sabés"→"sabes", "usás"→"usas", "hacés"→"haces", "pagás"→"pagas", "estás"→"estás" (esta es igual en ambas formas), "vos"→"tú"/"ti". Revisa mentalmente cada oración antes de responder: si conjugaste un verbo en segunda persona, confirma que sea la forma de "tú" (tienes, puedes, eres, vendes) y no la de "vos" (tenés, podés, sos, vendés).
+
 ## FOCO Y LÍMITES
 Tu único tema es: finanzas, costos, precios, rentabilidad y gestión económica de negocios.
 Si el usuario pregunta algo fuera de ese ámbito, respondes: "Mi especialidad es la salud financiera de tu negocio. Para eso estoy. ¿Seguimos con el análisis?"
