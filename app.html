@@ -740,7 +740,7 @@
       <img class="auth-logo-img" src="assets/03_logo_horizontal.png" alt="PymeGuía — Tu negocio, en orden.">
     </div>
 
-    <h1 class="auth-title">Descubrí si tu precio es correcto</h1>
+    <h1 class="auth-title">Descubre si tu precio es correcto</h1>
     <p class="auth-sub">Una conversación simple con IA que en 15 minutos te muestra la verdad de tus números. Sin saber de finanzas.</p>
 
     <div class="auth-features">
@@ -793,7 +793,7 @@
       <textarea
         class="chat-textarea"
         id="chat-input"
-        placeholder="Escribí tu respuesta..."
+        placeholder="Escribe tu respuesta..."
         rows="1"
         onkeydown="handleKeyDown(event)"
         oninput="autoResize(this)"
@@ -1235,7 +1235,7 @@ Nivel 2: "¿Tienes algún registro — cuaderno, celular, pedidos de WhatsApp?"
 Nivel 3: "Uso un estimado promedio. Lo ajustas después con los números reales."
 
 ## CUÁNDO MOSTRAR RESULTADOS
-Cuando tengas TODOS los datos de los 5 bloques, terminá tu mensaje con:
+Cuando tengas TODOS los datos de los 5 bloques, termina tu mensaje con:
 [RESULTADOS_LISTOS]
 
 FORMATO PRODUCTO ÚNICO:
@@ -1250,11 +1250,11 @@ REGLAS DEL JSON:
 - costo_total SIEMPRE = suma exacta de todos los ítems del desglose. VERIFICAR.
 - En multi-producto: costo_fijo_unit se calcula dividiendo los fijos totales entre TODAS las unidades de todos los productos, NO entre las unidades de un solo producto.
 - consejo_cualitativo: Consejo personalizado SIN NINGÚN NÚMERO. Solo observaciones cualitativas, sugerencias y estrategias basadas en lo que aprendiste del negocio. NUNCA menciones cifras, porcentajes ni montos — la app muestra los números correctos automáticamente. Ejemplos buenos: "Tu alquiler y cuota de autónomo son los gastos que más pesan por unidad. Podrías considerar trabajar desde casa para reducir fijos." Ejemplos MALOS: "Estás perdiendo €8,76 por unidad" (eso lo muestra la app, no tú).
-- Si valor_hora es 0 (no definido), NO incluyas mano de obra en el desglose NI en el costo_total. NUNCA uses un valor de mercado como sustituto en el desglose — eso lo hace la app automáticamente en la sección "Tu hora de trabajo". Si incluís mano de obra con valor_hora=0, los números se duplican y el análisis queda mal. Esto es un error grave.
+- Si valor_hora es 0 (no definido), NO incluyas mano de obra en el desglose NI en el costo_total. NUNCA uses un valor de mercado como sustituto en el desglose — eso lo hace la app automáticamente en la sección "Tu hora de trabajo". Si incluyes mano de obra con valor_hora=0, los números se duplican y el análisis queda mal. Esto es un error grave.
 - desglose: cada concepto UNA sola vez. Sin duplicados.
 - REGLA CRÍTICA DE PORCENTAJES: cuando un costo se calcula como porcentaje del precio de venta (impuestos sobre facturación, comisiones de plataforma, comisiones de tarjetas/medios de pago), el nombre del concepto DEBE incluir el porcentaje explícitamente. EJEMPLOS CORRECTOS: "Impuestos s/facturación 20%", "Comisión Shopify 2%", "Comisión tarjetas 1.5%", "IVA/IRPF 20%". EJEMPLOS INCORRECTOS: "Impuestos estimados (IVA/IRPF)", "Comisiones plataforma y pago" (sin el %). Esta regla es OBLIGATORIA — sin el porcentaje en el nombre, la app no puede calcular el precio correcto.
 - tiempo_horas y valor_hora: si no definió valor hora, valor_hora=0, completar mercado bajo/medio/alto según rubro+país.
-- FORMATO DE SALIDA OBLIGATORIO: escribí exactamente [RESULTADOS_LISTOS] y en la misma línea el JSON plano sin espacios entre medio. PROHIBIDO ABSOLUTO usar bloques de código, backticks o markdown. El JSON va en texto plano directo.
+- FORMATO DE SALIDA OBLIGATORIO: escribe exactamente [RESULTADOS_LISTOS] y en la misma línea el JSON plano sin espacios entre medio. PROHIBIDO ABSOLUTO usar bloques de código, backticks o markdown. El JSON va en texto plano directo.
 - EJEMPLO CORRECTO: [RESULTADOS_LISTOS]{"modo":"single",...}
 - EJEMPLO INCORRECTO (NUNCA hacer esto): poner backticks, bloques json, o saltos entre [RESULTADOS_LISTOS] y el JSON.
 - margen_elegido: el porcentaje que eligió el emprendedor (20, 30 o 40).
@@ -1333,7 +1333,7 @@ window.sendMessage = async function() {
         console.error('JSON parse error:', e);
         // Ask AI to reformat
         conversationHistory.push({ role: 'assistant', content: response });
-        conversationHistory.push({ role: 'user', content: 'Por favor mostrá los resultados finales.' });
+        conversationHistory.push({ role: 'user', content: 'Por favor muestra los resultados finales.' });
         const retry = await callAI(conversationHistory);
         hideTyping();
         if (retry.includes('[RESULTADOS_LISTOS]')) {
@@ -1349,7 +1349,7 @@ window.sendMessage = async function() {
             updateProgress(5);
             setTimeout(() => showResults(data), 600);
           } catch(e2) {
-            addMessage('ai', 'Hubo un problema al generar los resultados. Escribí "mostrame los resultados" para intentar de nuevo.');
+            addMessage('ai', 'Hubo un problema al generar los resultados. Escribe "muéstrame los resultados" para intentar de nuevo.');
           }
         } else {
           addMessage('ai', retry);
@@ -1394,15 +1394,15 @@ window.sendMessage = async function() {
 
 function getFriendlyError(msg) {
   if (msg.includes('exceeded_limit') || msg.includes('rate')) {
-    return 'Demasiadas consultas en poco tiempo. Esperá unos segundos y volvé a intentarlo. 🙏';
+    return 'Demasiadas consultas en poco tiempo. Espera unos segundos y vuelve a intentarlo. 🙏';
   }
   if (msg.includes('invalid') || msg.includes('api_key')) {
-    return 'Hay un problema con la configuración del servicio. Contactá al administrador del sitio.';
+    return 'Hay un problema con la configuración del servicio. Contacta al administrador del sitio.';
   }
   if (msg.includes('insufficient') || msg.includes('credit')) {
-    return 'El servicio se quedó sin créditos disponibles. Contactá al administrador del sitio.';
+    return 'El servicio se quedó sin créditos disponibles. Contacta al administrador del sitio.';
   }
-  return 'Hubo un error de conexión. Verificá tu internet y volvé a intentarlo.';
+  return 'Hubo un error de conexión. Verifica tu internet y vuelve a intentarlo.';
 }
 
 function detectAndUpdateBlock(msg) {
@@ -1470,7 +1470,7 @@ window.toggleVoice = async function() {
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch(e) {
-    alert('No se pudo acceder al micrófono. Revisá los permisos del navegador.');
+    alert('No se pudo acceder al micrófono. Revisa los permisos del navegador.');
     return;
   }
 
@@ -1491,7 +1491,7 @@ window.toggleVoice = async function() {
     btn.innerHTML = SEND_ICON;
     btn.title = 'Terminar y enviar';
     document.getElementById('send-btn').style.display = 'none';
-    document.getElementById('chat-input').placeholder = '🎤 Escuchando... tocá para enviar';
+    document.getElementById('chat-input').placeholder = '🎤 Escuchando... toca para enviar';
   };
 
   mediaRecorder.onstop = async () => {
@@ -1506,7 +1506,7 @@ window.toggleVoice = async function() {
     const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
     const input = document.getElementById('chat-input');
     if (blob.size === 0) {
-      input.placeholder = 'Escribí tu respuesta...';
+      input.placeholder = 'Escribe tu respuesta...';
       return;
     }
 
@@ -1517,7 +1517,7 @@ window.toggleVoice = async function() {
       const text = await transcribeAudio(blob);
       input.disabled = false;
       btn.disabled = false;
-      input.placeholder = 'Escribí tu respuesta...';
+      input.placeholder = 'Escribe tu respuesta...';
       if (text) {
         input.value = (input.value ? input.value + ' ' : '') + text;
         autoResize(input);
@@ -1527,8 +1527,8 @@ window.toggleVoice = async function() {
       console.error('Transcription error:', e);
       input.disabled = false;
       btn.disabled = false;
-      input.placeholder = 'Escribí tu respuesta...';
-      alert('No se pudo transcribir el audio. Probá de nuevo o escribí tu respuesta.');
+      input.placeholder = 'Escribe tu respuesta...';
+      alert('No se pudo transcribir el audio. Prueba de nuevo o escribe tu respuesta.');
     }
   };
 
