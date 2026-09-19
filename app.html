@@ -1780,6 +1780,7 @@ function showResults(data) {
     const margenReal = data.precio_actual > 0 ? (gan / data.precio_actual) * 100 : 0;
     const { prec: precRecVerificado, costoReal: costoRealAlRec } = calcPrecioRec(desgloseItems, costoTotal, data.margen_elegido || 30);
     const { prec: precioMinimo } = calcPrecioRec(desgloseItems, costoTotal, 0);
+    const tienePctCostos = desgloseItems.some(r => /\d+(?:\.\d+)?\s*%/.test(r.concepto));
     const ganRec = Math.round((precRecVerificado - costoRealAlRec) * 100) / 100;
     const ganMesReal = Math.round(gan * data.unidades_mes * 100) / 100;
     const ganMesRec = Math.round(ganRec * data.unidades_mes * 100) / 100;
@@ -1810,7 +1811,7 @@ function showResults(data) {
       <div class="results-step"><div class="results-step-label">① Lo que te cuesta producir cada unidad</div>
         <div class="section-card"><div class="section-card-header">📦 Desglose de costos</div>
           ${desgloseItems.map(r=>`<div class="cost-row"><span class="cost-label">${r.concepto}</span><span class="cost-value">${c}${fmt(r.valor)}</span></div>`).join('')}
-          <div class="cost-row total"><span class="cost-label">COSTO TOTAL por unidad</span><span class="cost-value">${c}${fmt(costoTotal)}</span></div></div></div>
+          <div class="cost-row total"><span class="cost-label">COSTO TOTAL a tu precio actual</span><span class="cost-value">${c}${fmt(costoTotal)}</span></div></div></div>
       <div class="results-step"><div class="results-step-label">② Lo que cobras hoy y qué te deja</div>
         <div class="status-banner ${statusClass}"><div class="status-icon">${statusIcon}</div><div><div class="status-text-title">${statusTitle}</div><div class="status-text-sub">${statusSub}</div></div></div>
         <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
@@ -1819,7 +1820,7 @@ function showResults(data) {
           <div class="metric-card" style="grid-column:1/-1;"><div class="metric-label">Ganancia mensual actual</div><div class="metric-value" style="color:${ganMesReal<0?'var(--danger)':'var(--text)'}">${c}${fmt(ganMesReal)}</div><div class="metric-desc">Con ${data.unidades_mes} unidades/mes a tu precio actual</div></div></div></div>
       <div class="results-step"><div class="results-step-label">③ Lo que deberías cobrar</div>
         <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
-          <div class="metric-card danger-border"><div class="metric-label">Precio mínimo</div><div class="metric-value">${c}${fmt(precioMinimo)}</div><div class="metric-desc">Punto de equilibrio real — por debajo pierdes dinero</div></div>
+          <div class="metric-card danger-border"><div class="metric-label">Precio mínimo</div><div class="metric-value">${c}${fmt(precioMinimo)}</div><div class="metric-desc">${tienePctCostos ? 'Punto de equilibrio real — a este precio, las comisiones % también bajan' : 'Punto de equilibrio real — por debajo pierdes dinero'}</div></div>
           <div class="metric-card accent-border"><div class="metric-label">Precio recomendado</div><div class="metric-value" style="color:var(--accent)">${c}${fmt(precRecVerificado)}</div><div class="metric-desc">Con margen del ${data.margen_elegido||30}% — ${(data.margen_elegido||30)===20?'conservador':(data.margen_elegido||30)===40?'ambicioso':'recomendado'}</div></div></div>
         <div class="results-gap-note">${data.precio_actual<precRecVerificado?`<span class="gap-warn">⬆️ Diferencia con tu precio actual: ${c}${fmt(precRecVerificado-data.precio_actual)} por unidad</span>`:`<span class="gap-ok">✅ Tu precio actual ya está por encima del recomendado</span>`}</div></div>
       <div class="results-step"><div class="results-step-label">④ Qué ganarías al precio recomendado</div>
@@ -1829,10 +1830,11 @@ function showResults(data) {
       <div class="advice-card" style="border-left-color: var(--accent);">
         <div class="advice-title" style="color: var(--accent);">📊 Diagnóstico numérico</div>
         <div class="advice-text" style="font-size:14px; line-height:1.6;">
-          Tu costo real por unidad es <strong>${c}${fmt(costoTotal)}</strong>. A tu precio actual de <strong>${c}${fmt(data.precio_actual)}</strong>, 
+          A tu precio actual de <strong>${c}${fmt(data.precio_actual)}</strong>, te cuesta <strong>${c}${fmt(costoTotal)}</strong> producir y vender cada unidad, y
           ${gan < 0 ? `pierdes <strong style="color:var(--danger)">${c}${fmt(Math.abs(gan))}</strong> por cada venta` : `ganas <strong style="color:var(--success)">${c}${fmt(gan)}</strong> por unidad`}.
           ${gan < 0 ? `Eso son <strong style="color:var(--danger)">${c}${fmt(Math.abs(gan * data.unidades_mes))}</strong> de pérdida mensual con ${data.unidades_mes} unidades.` : `Eso son <strong>${c}${fmt(gan * data.unidades_mes)}</strong> de ganancia mensual con ${data.unidades_mes} unidades.`}
           Para un margen del ${data.margen_elegido || 30}%, tu precio debería ser <strong style="color:var(--success)">${c}${fmt(precRecVerificado)}</strong>.
+          ${tienePctCostos ? ` El precio mínimo (${c}${fmt(precioMinimo)}) puede verse más bajo que tu costo actual porque parte de tus costos son comisiones o impuestos que se calculan como % del precio — a un precio menor, esos montos también bajan.` : ''}
         </div>
       </div>
       ${data.consejo_cualitativo?`<div class="advice-card"><div class="advice-title">💡 Consejo para tu negocio</div><div class="advice-text">${data.consejo_cualitativo}</div></div>`:''}
@@ -1921,7 +1923,7 @@ function buildResultCardHTML(d) {
         <div style="background:#1F4E79;color:white;padding:10px 14px;font-size:13px;font-weight:600;">📊 ${d.negocio} · ${d.producto||''}</div>
         <div style="background:${sBg};padding:8px 14px;display:flex;align-items:center;gap:8px;font-size:12px;color:${sColor};font-weight:600;">${sIcon} ${sText}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#e4e7ec;">
-          <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Costo total</div><div style="font-size:17px;font-weight:700;color:#2563eb;">${c}${fmt(ct)}</div></div>
+          <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Costo a precio actual</div><div style="font-size:17px;font-weight:700;color:#2563eb;">${c}${fmt(ct)}</div></div>
           <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Precio actual</div><div style="font-size:17px;font-weight:700;">${c}${fmt(d.precio_actual)}</div></div>
           <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Precio mínimo</div><div style="font-size:17px;font-weight:700;color:#dc2626;">${c}${fmt(precMin)}</div></div>
           <div style="background:white;padding:8px 14px;"><div style="font-size:9px;color:#9ca3af;text-transform:uppercase;">Recomendado</div><div style="font-size:17px;font-weight:700;color:#059669;">${c}${fmt(precRec)}</div></div>
