@@ -44,8 +44,13 @@ exports.handler = async (event) => {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 1024,
+        model: 'claude-sonnet-5-5',
+        // Cubre pensamiento + texto; el JSON final de resultados multi-producto es largo.
+        max_tokens: 2048,
+        // En Sonnet 5.5 sin este campo piensa antes de responder (mas latencia y costo);
+        // "disabled" da error 400, "between_tools" es el ajuste mas bajo.
+        thinking: { type: 'between_tools' },
+        output_config: { effort: 'medium' },
         system: system || '',
         messages
       })
