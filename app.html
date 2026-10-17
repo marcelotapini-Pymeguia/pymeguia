@@ -1041,7 +1041,7 @@ function restoreConversation(history) {
           const startIdx = jsonStr.indexOf('{');
           const endIdx = jsonStr.lastIndexOf('}');
           if (startIdx !== -1 && endIdx !== -1) jsonStr = jsonStr.substring(startIdx, endIdx + 1);
-          const data = JSON.parse(jsonStr);
+          const data = fixPctItems(JSON.parse(jsonStr));
           window.lastResultsData = data;
           appendResultCard(data);
         } catch(e) {
@@ -1255,7 +1255,7 @@ REGLAS DEL JSON:
 - consejo_cualitativo: Consejo personalizado SIN NINGÚN NÚMERO. Solo observaciones cualitativas, sugerencias y estrategias basadas en lo que aprendiste del negocio. NUNCA menciones cifras, porcentajes ni montos — la app muestra los números correctos automáticamente. Ejemplos buenos: "Tu alquiler y cuota de autónomo son los gastos que más pesan por unidad. Podrías considerar trabajar desde casa para reducir fijos." Ejemplos MALOS: "Estás perdiendo €8,76 por unidad" (eso lo muestra la app, no tú).
 - Si valor_hora es 0 (no definido), NO incluyas mano de obra en el desglose NI en el costo_total. NUNCA uses un valor de mercado como sustituto en el desglose — eso lo hace la app automáticamente en la sección "Tu hora de trabajo". Si incluyes mano de obra con valor_hora=0, los números se duplican y el análisis queda mal. Esto es un error grave.
 - desglose: cada concepto UNA sola vez. Sin duplicados.
-- REGLA CRÍTICA DE PORCENTAJES: cuando un costo se calcula como porcentaje del precio de venta (impuestos sobre facturación, comisiones de plataforma, comisiones de tarjetas/medios de pago), el nombre del concepto DEBE incluir el porcentaje explícitamente. EJEMPLOS CORRECTOS: "Impuestos s/facturación 20%", "Comisión Shopify 2%", "Comisión tarjetas 1.5%", "IVA/IRPF 20%". EJEMPLOS INCORRECTOS: "Impuestos estimados (IVA/IRPF)", "Comisiones plataforma y pago" (sin el %). Esta regla es OBLIGATORIA — sin el porcentaje en el nombre, la app no puede calcular el precio correcto.
+- REGLA CRÍTICA DE PORCENTAJES: cuando un costo se calcula como porcentaje del precio de venta (impuestos sobre facturación, comisiones de plataforma, comisiones de tarjetas/medios de pago), el nombre del concepto DEBE incluir el porcentaje explícitamente. EJEMPLOS CORRECTOS: "Impuestos s/facturación 20%", "Comisión Shopify 2%", "Comisión tarjetas 1.5%", "IVA/IRPF 20%". EJEMPLOS INCORRECTOS: "Impuestos estimados (IVA/IRPF)", "Comisiones plataforma y pago" (sin el %). Esta regla es OBLIGATORIA — sin el porcentaje en el nombre, la app no puede calcular el precio correcto. Además, el campo "valor" de cada uno de esos conceptos debe ser el MONTO en la moneda del negocio calculado sobre el precio_actual de ESE producto (ejemplo: "Comisión Etsy 14.1%" sobre un precio de 48.97 → valor 6.90). NUNCA dejes "valor" en 0 en un concepto porcentual, tampoco en modo multi-producto: calcúlalo producto por producto. Y "costo_total" de cada producto es la suma de su desglose, nunca 0.
 - tiempo_horas y valor_hora: si no definió valor hora, valor_hora=0, completar mercado bajo/medio/alto según rubro+país.
 - FORMATO DE SALIDA OBLIGATORIO: escribe exactamente [RESULTADOS_LISTOS] y en la misma línea el JSON plano sin espacios entre medio. PROHIBIDO ABSOLUTO usar bloques de código, backticks o markdown. El JSON va en texto plano directo.
 - EJEMPLO CORRECTO: [RESULTADOS_LISTOS]{"modo":"single",...}
@@ -1326,7 +1326,7 @@ window.sendMessage = async function() {
         if (startIdx !== -1 && endIdx !== -1) {
           jsonStr = jsonStr.substring(startIdx, endIdx + 1);
         }
-        const data = JSON.parse(jsonStr);
+        const data = fixPctItems(JSON.parse(jsonStr));
         window.lastResultsData = data;
         conversationHistory.push({ role: 'assistant', content: response });
         await saveConversation();
@@ -1346,7 +1346,7 @@ window.sendMessage = async function() {
             const si = retryJson.indexOf('{');
             const ei = retryJson.lastIndexOf('}');
             if (si !== -1 && ei !== -1) retryJson = retryJson.substring(si, ei + 1);
-            const data = JSON.parse(retryJson);
+            const data = fixPctItems(JSON.parse(retryJson));
             conversationHistory.push({ role: 'assistant', content: retry });
             await saveConversation();
             updateProgress(5);
@@ -1367,7 +1367,7 @@ window.sendMessage = async function() {
         const si = cleaned.indexOf('{');
         const ei = cleaned.lastIndexOf('}');
         if (si !== -1 && ei !== -1) {
-          const candidate = JSON.parse(cleaned.substring(si, ei + 1));
+          const candidate = fixPctItems(JSON.parse(cleaned.substring(si, ei + 1)));
           if (candidate.modo === 'single' || candidate.modo === 'multi') {
             fallbackData = candidate;
           }
@@ -1419,6 +1419,24 @@ function detectAndUpdateBlock(msg) {
   } else if (lower.includes('materia prima') || lower.includes('insumo') || lower.includes('cuánto tardas')) {
     updateProgress(2);
   }
+}
+
+// ── Red de seguridad: conceptos porcentuales con valor 0 ──
+// Si la IA deja en 0 (o sin valor) un concepto como "Comisión Etsy 14.1%", la app lo descartaria
+// (filtra valor <= 0) y el costo, el margen y el precio recomendado quedarian mal. Se calcula el
+// monto sobre el precio actual del producto, igual que hace la IA cuando responde bien.
+function fixPctItems(data) {
+  if (!data || typeof data !== 'object') return data;
+  const fix = (item, precio) => {
+    if (!item || !Array.isArray(item.desglose) || !(precio > 0)) return;
+    item.desglose.forEach(r => {
+      const m = r && typeof r.concepto === 'string' && r.concepto.match(/(\d+(?:\.\d+)?)\s*%/);
+      if (m && !(r.valor > 0)) r.valor = Math.round(parseFloat(m[1]) / 100 * precio * 100) / 100;
+    });
+  };
+  if (data.modo === 'multi' && Array.isArray(data.productos)) data.productos.forEach(p => fix(p, p.precio_actual));
+  else fix(data, data.precio_actual);
+  return data;
 }
 
 // ── Red de seguridad anti-voseo ──
