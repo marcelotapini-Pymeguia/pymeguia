@@ -51,6 +51,10 @@ exports.handler = async (event) => {
         // "disabled" da error 400, "between_tools" es el ajuste mas bajo.
         thinking: { type: 'between_tools' },
         output_config: { effort: 'medium' },
+        // Prompt caching automatico: el system prompt (~5.500 tokens) y el historial se
+        // reenvian enteros en cada turno; las lecturas de cache cuestan ~5% del precio normal.
+        // thinking y effort son fijos, asi que no invalidan el cache entre turnos.
+        cache_control: { type: 'ephemeral' },
         system: system || '',
         messages
       })
