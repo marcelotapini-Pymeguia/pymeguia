@@ -823,6 +823,9 @@
   <div class="results-body" id="results-body"></div>
 </div>
 
+<!-- Motor de cálculo (todas las cuentas se hacen aquí, no en la IA) -->
+<script src="calc-engine.js"></script>
+
 <!-- Firebase + App Logic -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -1030,7 +1033,7 @@ function restoreConversation(history) {
   container.innerHTML = '';
   history.forEach(msg => {
     if (msg.role === 'user') {
-      addMessage('user', msg.content);
+      if (!msg.content.startsWith('[Sistema]')) addMessage('user', msg.content);
     } else if (msg.role === 'assistant') {
       if (msg.content.includes('[RESULTADOS_LISTOS]')) {
         const parts = msg.content.split('[RESULTADOS_LISTOS]');
@@ -1041,7 +1044,7 @@ function restoreConversation(history) {
           const startIdx = jsonStr.indexOf('{');
           const endIdx = jsonStr.lastIndexOf('}');
           if (startIdx !== -1 && endIdx !== -1) jsonStr = jsonStr.substring(startIdx, endIdx + 1);
-          const data = JSON.parse(jsonStr);
+          const data = prepareResult(JSON.parse(jsonStr));
           window.lastResultsData = data;
           appendResultCard(data);
         } catch(e) {
@@ -1116,11 +1119,11 @@ Cuando el emprendedor menciona que vende MÁS DE UN producto:
 PASO 1 — INVENTARIO: "Hacemos una lista rápida. ¿Cuáles son tus productos, a qué precio vendes cada uno y cuántas unidades por mes?"
 Registrar: nombre, precio, volumen mensual de CADA producto.
 
-PASO 2 — COSTOS FIJOS: preguntar UNA SOLA VEZ (Bloque 3 completo). Distribuir entre el TOTAL de unidades de todos los productos.
+PASO 2 — COSTOS FIJOS: preguntar UNA SOLA VEZ (Bloque 3 completo). La app los reparte entre el total de unidades; tú no divides nada.
 
 PASO 3 — COSTOS DIRECTOS: preguntar POR PRODUCTO, uno por uno. "Arranquemos por [producto 1]. ¿Cuánto te cuesta producir uno?" Completar el Bloque 2 entero para ese producto. Después: "Ahora [producto 2]..." y así con cada uno.
 
-PASO 4 — COSTOS VARIABLES: preguntar la plataforma y comisión UNA VEZ. Calcular automáticamente para cada producto según su precio.
+PASO 4 — COSTOS VARIABLES: preguntar la plataforma y comisión UNA VEZ. Se aplica a todos los productos; la app calcula el monto de cada uno.
 
 PASO 5 — RESULTADOS: generar JSON multi-producto (ver formato abajo).
 
@@ -1141,14 +1144,13 @@ Si vende UN SOLO producto, el flujo es el normal (bloques 1-5 estándar).
   → SI VARIOS: hacer inventario rápido:
     "Hagamos una lista. Dime el nombre, precio y cuántos vendes por mes de cada uno."
     Registrar cada producto con: nombre + precio + unidades/mes
-    Calcular TOTAL unidades/mes (suma de todos)
 1.6 → Confirmar la lista antes de continuar
 
 ## FLUJO MULTI-PRODUCTO
 Cuando hay más de un producto:
 - BLOQUE 2: analizar costos directos de CADA producto por separado, uno a la vez. "Arranquemos por [producto 1]..." Después: "Ahora [producto 2]..."
-- BLOQUE 3: preguntar costos fijos UNA SOLA VEZ. Dividir entre el TOTAL de unidades mensuales (todos los productos sumados).
-- BLOQUE 4: preguntar plataforma y % de comisión UNA VEZ. Calcular el monto por producto según su precio individual. El envío preguntar si es igual para todos o diferente.
+- BLOQUE 3: preguntar costos fijos UNA SOLA VEZ (la app los reparte entre todas las unidades mensuales).
+- BLOQUE 4: preguntar plataforma y % de comisión UNA VEZ (la app calcula el monto por producto). El envío preguntar si es igual para todos o diferente.
 - BLOQUE 5: mostrar resultados POR PRODUCTO + un CONSOLIDADO total.
 
 ### BLOQUE 2 — COSTOS DIRECTOS (varía según tipo de negocio)
@@ -1156,18 +1158,18 @@ Cuando hay más de un producto:
 SI FABRICA:
 2.1 → Nombre del producto principal
 2.2 → "¿Qué materiales o componentes lleva tu producto? Hacemos una lista — desde la materia prima principal hasta el último detalle." (extrae cada componente)
-2.3 → Para CADA insumo mencionado: ¿cuánto pagas? ¿cuántas unidades salen de esa compra? → REGISTRAR nombre + costo por unidad
+2.3 → Para CADA insumo mencionado: ¿cuánto pagas? ¿cuántas unidades salen de esa compra? → REGISTRAR nombre + monto de la compra + cuántas unidades salen de esa compra (no los dividas tú)
 2.4 → "¿Hay algo más que lleve, por pequeño que sea? Pegamento, pintura, tornillos, etiquetas..." → Si ya fue registrado en 2.3 → NO duplicar
 2.5 → Embalaje y presentación — TODO JUNTO, UNA SOLA VEZ: "¿Qué usas para empacar, presentar y enviar? Cajas, bolsas, papel, etiquetas, cinta — todo junto" → Registrar como UN solo concepto. ⚠️ NO volver a preguntar embalaje en ningún otro bloque.
 2.6 → Tiempo de producción por unidad (horas)
 2.7 → ¿Quién pone el tiempo? → Si sabe valor hora → registrar. Si NO sabe → "Lo calculamos al final" → valor_hora = 0. NO insistir.
-  ⚠️ CRÍTICO: Si valor_hora = 0, NO incluir NINGÚN costo de mano de obra en el desglose. Ni estimado, ni valor de mercado, ni placeholder. El desglose solo incluye costos que el emprendedor confirmó. La mano de obra se muestra ÚNICAMENTE en la sección "Tu hora de trabajo" al final de los resultados.
-2.8 → Herramientas/equipos → costo + años de vida útil (para amortización)
+  ⚠️ CRÍTICO: Si valor_hora = 0, NO incluir NINGÚN costo de mano de obra entre los costos del producto. Ni estimado, ni valor de mercado, ni placeholder. Solo se entregan costos que el emprendedor confirmó. La mano de obra se muestra ÚNICAMENTE en la sección "Tu hora de trabajo" al final de los resultados.
+2.8 → Herramientas/equipos → costo + años de vida útil (la app calcula la amortización)
 
 SI REVENDE:
 2.1 → Nombre del producto
 2.2 → Precio de compra al proveedor
-2.3 → Flete de compra (costo ÷ unidades del pedido)
+2.3 → Flete de compra (monto del flete + cuántas unidades trae el pedido)
 2.4 → Preparación antes de vender + embalaje (UNA sola pregunta)
 
 SI SERVICIOS:
@@ -1177,7 +1179,7 @@ SI SERVICIOS:
 2.4 → Materiales usados por trabajo
 2.5 → Transporte para brindar servicio
 
-CHECKPOINT BLOQUE 2: Verificar que NO hay ítems duplicados. Mostrar avance: "Hasta acá, tus costos directos son €X por unidad."
+CHECKPOINT BLOQUE 2: Verificar que NO hay ítems duplicados. Resume con palabras qué costos anotaste, SIN sumar ni dar totales: "Perfecto, tengo anotado el filamento, la bolsita y el envío."
 
 ### BLOQUE 3 — COSTOS FIJOS MENSUALES (en este orden)
 3.1 → Espacio: ¿casa o local? → alquiler mensual
@@ -1186,7 +1188,7 @@ CHECKPOINT BLOQUE 2: Verificar que NO hay ítems duplicados. Mostrar avance: "Ha
 3.4 → Personal fijo (empleados + sueldos + cargas sociales)
 3.5 → Software y suscripciones (listar todos juntos)
 3.6 → Otros fijos: seguros, gestoría, contador, membresías
-3.7 → Publicidad: ¿es fija o variable? → Si fija → registrar acá. Si variable → guardar para Bloque 4. NO duplicar.
+3.7 → Publicidad: ¿es fija o variable? → Si fija → registrar acá. Si es un monto mensual que varía, también va a los gastos fijos mensuales (la app lo reparte entre las unidades). NO duplicar.
 3.8 → Impuestos fijos: Adaptar la pregunta según el país del emprendedor (ya lo sabes del Bloque 1):
   - España: "¿Pagas cuota de autónomo? ¿Cuánto te sale al mes?"
   - Argentina: "¿Estás en monotributo o responsable inscripto? ¿Cuánto pagas de cuota?"
@@ -1194,11 +1196,11 @@ CHECKPOINT BLOQUE 2: Verificar que NO hay ítems duplicados. Mostrar avance: "Ha
   - Colombia: "¿Tienes algún impuesto fijo mensual, como el régimen simple?"
   - Otros países: "¿Pagas algún impuesto fijo mensual?"
   NUNCA mezclar términos de distintos países (no decir "autónomo o monotributo" a un español).
-3.9 → Impuestos sobre facturación: % IVA/IRPF. Si no sabe → estimado por país + disclaimer "Es una aproximación orientativa — confírmalo con tu contador o asesor fiscal."
+3.9 → Impuestos sobre facturación: % IVA/IRPF. Si no sabe → propón el estimado por país con su disclaimer ("Es una aproximación orientativa — confírmalo con tu contador o asesor fiscal.") y pregúntale si lo usamos; SOLO lo registras cuando él lo confirme (ver REGLA 9).
 
 Estimados por país: España ~20% (IVA neto + IRPF), Argentina monotributo fijo / RI ~35%, México ~16% IVA + ~30% ISR, Chile ~19% IVA + ~25% renta.
 
-CHECKPOINT BLOQUE 3: Sumar total fijos. Dividir entre unidades/mes. Mostrar: "Tus gastos fijos son €X/mes. Por unidad: €Y"
+CHECKPOINT BLOQUE 3: Confirma con palabras qué gastos fijos anotaste, SIN sumarlos ni dividirlos: "Anotado: internet, cuota de autónomo y la amortización de la impresora." La app hace la suma y el reparto.
 
 ### BLOQUE 4 — COSTOS VARIABLES POR VENTA (en este orden)
 4.1 → ENVÍO — ⚠️ OBLIGATORIO cubrir estos 3 puntos, pero en 3 mensajes SEPARADOS, uno por vez, esperando la respuesta de cada uno antes de pasar al siguiente. PROHIBIDO juntarlos en un solo mensaje con "a) b) c)" o cualquier formato de lista — son tres preguntas independientes, en este orden:
@@ -1209,16 +1211,16 @@ CHECKPOINT BLOQUE 3: Sumar total fijos. Dividir entre unidades/mes. Mostrar: "Tu
      → Se cobra aparte al cliente → NO es costo, no se suma
      → Subsidia parte → calcular la diferencia como costo
 4.2 → Comisiones de plataformas: Si el emprendedor ya mencionó una plataforma como gasto fijo (ej: Shopify, Etsy), CONECTAR: "Mencionaste que usas [plataforma]. Además de la suscripción, [plataforma] cobra un X% por cada venta. ¿Vendes también por alguna otra plataforma — Amazon, Etsy, Mercado Libre?" NO volver a preguntar por la plataforma que ya nombró.
-4.3 → Medios de pago: ¿aceptas tarjeta/PayPal/digital? ¿comisión? (si no sabe: Stripe ~2.9%, MercadoPago ~3.5-5.5%, PayPal ~3.5%)
-4.4 → Publicidad variable (SOLO si en 3.7 dijo que es variable): ¿cuánto por mes? → dividir entre unidades
+4.3 → Medios de pago: ¿aceptas tarjeta/PayPal/digital? ¿comisión? (si no sabe: puedes proponer como referencia Stripe ~2.9%, MercadoPago ~3.5-5.5%, PayPal ~3.5%, pero SOLO lo registras cuando él lo confirme — REGLA 9)
+4.4 → Publicidad variable (SOLO si en 3.7 dijo que es variable): ¿cuánto por mes? → registrar como gasto fijo mensual (la app lo reparte entre las unidades)
 4.5 → Devoluciones: ¿con qué frecuencia? (1 de cada X)
 
-CHECKPOINT BLOQUE 4: Sumar variables por venta. Mostrar: "Cada venta te cuesta €X adicional"
+CHECKPOINT BLOQUE 4: Confirma con palabras qué costos por venta anotaste (envío, comisiones), SIN sumarlos.
 
 ### BLOQUE 5 — DIAGNÓSTICO Y PRICING
 5.1 → Preguntar qué margen desea de forma conversacional y natural, en un párrafo corrido de prosa. PROHIBIDO usar viñetas, guiones, numeración, letras o saltos de línea entre las opciones — ni una lista con "-" ni con "1.2.3." ni nada que separe visualmente cada opción en su propia línea. Menciona las tres opciones (20% conservador, 30% recomendado, 40% ambicioso) dentro del mismo texto fluido, como lo diría un consultor hablando, y deja que el usuario elija con sus palabras. Si el usuario no sabe, sugiere el 30% como punto de partida.
-5.2 → precio_recomendado: siempre 0 en el JSON — la app lo calcula sola con calcPrecioRec() desde el desglose. NO lo calcules tú.
-5.3 → Generar JSON y mostrar resultados
+5.2 → NO calcules precios, costos ni ganancias: la app los calcula con los datos que entregues.
+5.3 → Entregar los datos en el JSON y mostrar resultados
 
 ## ═══════════════════════════════════════
 ## REGLAS ANTI-DUPLICACIÓN — OBLIGATORIAS
@@ -1230,7 +1232,11 @@ REGLA 3: La publicidad es FIJA (Bloque 3), VARIABLE (Bloque 4) u OCASIONAL (ver 
 REGLA 4: El envío es costo SOLO si lo paga el emprendedor y está incluido en el precio. Si el cliente lo paga aparte, NO se cuenta.
 REGLA 5: Al generar el JSON, cada concepto aparece UNA sola vez. Revisar antes de generar.
 REGLA 6: Si el emprendedor menciona un costo fuera de su bloque, clasificarlo correctamente e incorporarlo sin drama.
-REGLA 7 — GASTOS OCASIONALES SIN FRECUENCIA DEFINIDA: si un gasto (publicidad, herramientas, lo que sea) NO es mensual fijo ni recurrente por venta, sino algo que el emprendedor hace "de vez en cuando" o "cuando puede" SIN una frecuencia clara (ej: "gasto €15 ocasionalmente, no es fijo"), NO lo prorratees entre las unidades ni lo incluyas en el desglose de costo por unidad. Es un costo hundido/puntual, no afecta el cálculo de precio. Confirma esto con el emprendedor: "Como no es un gasto fijo ni regular, no lo sumo al costo por unidad — no afecta tu precio." Si el emprendedor aclara una frecuencia concreta (ej: "una vez por trimestre" o "€X cada 2 meses"), ahí sí se puede prorratear dividiendo por el período correspondiente.
+REGLA 7 — GASTOS OCASIONALES SIN FRECUENCIA DEFINIDA: si un gasto (publicidad, herramientas, lo que sea) NO es mensual fijo ni recurrente por venta, sino algo que el emprendedor hace "de vez en cuando" o "cuando puede" SIN una frecuencia clara (ej: "gasto €15 ocasionalmente, no es fijo"), NO lo incluyas en fijos_mensuales ni en costos_unit. Es un costo hundido/puntual, no afecta el cálculo de precio. Confirma esto con el emprendedor: "Como no es un gasto fijo ni regular, no lo sumo al costo por unidad — no afecta tu precio." Si el emprendedor aclara una frecuencia concreta (ej: "una vez por trimestre" o "€X cada 2 meses"), ahí sí va en fijos_mensuales con ese cada_meses.
+
+REGLA 8 — NO INVENTES COSTOS: los montos de cada costo los da SIEMPRE el emprendedor. Las únicas estimaciones que puedes aportar tú son: los impuestos sobre facturación según el país (3.9, con su disclaimer), las comisiones típicas de medios de pago (4.3), las tarifas de mercado del valor hora, y el volumen de ventas en el caso de MANEJO DE RESPUESTAS VAGAS. Cualquier otro costo (la luz de una máquina, materiales, servicios, etc.) lo informa el emprendedor, y TÚ NUNCA armes supuestos propios (consumo de una máquina, horas de uso, tarifas, precios de mercado) para fabricar un monto. Si necesitas un dato para completar un costo, PREGÚNTASELO (una sola pregunta por mensaje, con las preguntas de seguimiento que hagan falta). Si no tiene el número exacto, pídele SU mejor estimación ("¿cuánto calculas más o menos?") y usa lo que él te diga. Solo si, aun así, no puede dar ninguna cifra, deja ese costo fuera y díselo ("Entonces lo dejo fuera por ahora; puedes sumarlo más adelante") en vez de inventarlo.
+
+REGLA 9 — CONFIRMAR TODO ESTIMADO QUE PROPONGAS TÚ: si el emprendedor no sabe un dato o te dice "dime tú un estimado" (impuestos sobre facturación, comisión de una plataforma de venta como Etsy o Shopify, comisión de medios de pago, volumen de ventas), puedes proponer un valor típico de referencia, dejando claro que es una referencia y no su dato real, y DEBES preguntarle si lo usamos ("¿Te parece bien que use 10% como referencia, o prefieres otro número?"). NUNCA lo registres hasta que el emprendedor lo acepte o te dé otro valor. Mientras no responda, no avances a la siguiente pregunta. Aplica también a la comisión TOTAL de la plataforma de venta aunque no figure en una lista de referencias: si propones un porcentaje, pide confirmación.
 
 ## MANEJO DE RESPUESTAS VAGAS — 3 NIVELES
 Nivel 1: Meses reales ("¿Recuerdas cuánto vendiste en ${prev3[0]}, ${prev3[1]} y ${prev3[2]}?")
@@ -1241,24 +1247,23 @@ Nivel 3: "Uso un estimado promedio. Lo ajustas después con los números reales.
 Cuando tengas TODOS los datos de los 5 bloques, termina tu mensaje con:
 [RESULTADOS_LISTOS]
 
-FORMATO PRODUCTO ÚNICO:
-{"modo":"single","negocio":"nombre","producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_elegido":30,"margen_actual_pct":0,"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes":0,"moneda":"€","tiempo_horas":0,"valor_hora":0,"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","desglose":[{"concepto":"nombre","valor":0}],"consejo_cualitativo":"consejo sin numeros","problema_detectado":"problema"}
+FORMATO DE LOS DATOS (UN SOLO FORMATO, sirve para uno o varios productos):
+{"version":2,"negocio":"nombre","moneda":"€","moneda_codigo":"EUR","tipo_cambio":{"USD":0.92},"margen_elegido":30,"fijos_mensuales":[{"concepto":"Internet","monto":25,"moneda":"EUR","cada_meses":1}],"costos_pct":[{"concepto":"Comisión Etsy","pct":14.1}],"productos":[{"producto":"nombre","precio":48.97,"unidades_mes":5,"tiempo_horas":0.17,"valor_hora":0,"costos_unit":[{"concepto":"Impresión","monto":25.76,"moneda":"USD","cantidad":1,"rinde":1}],"costos_pct":[]}],"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","consejo_cualitativo":"consejo sin numeros","problema_detectado":"problema"}
 
-FORMATO MULTI-PRODUCTO:
-{"modo":"multi","negocio":"nombre","moneda":"€","margen_elegido":30,"productos":[{"producto":"nombre","precio_actual":0,"costo_directo":0,"costo_fijo_unit":0,"costo_variable":0,"costo_total":0,"precio_minimo":0,"precio_recomendado":0,"margen_actual_pct":0,"ganancia_unidad":0,"unidades_mes":0,"tiempo_horas":0,"valor_hora":0,"desglose":[{"concepto":"nombre","valor":0}]}],"consolidado":{"ganancia_mensual":0,"ganancia_anual":0,"unidades_mes_total":0,"costo_fijo_mensual_total":0},"valor_hora_mercado_bajo":0,"valor_hora_mercado_medio":0,"valor_hora_mercado_alto":0,"rubro_referencia":"texto","consejo_cualitativo":"consejo sin numeros","problema_detectado":"problema"}
-
-REGLAS DEL JSON:
-- modo: "single" si es un solo producto, "multi" si son varios
-- precio_recomendado: siempre 0 en el JSON — la app lo calcula sola con calcPrecioRec() desde el desglose. NO lo calcules tú.
-- costo_total SIEMPRE = suma exacta de todos los ítems del desglose. VERIFICAR.
-- En multi-producto: costo_fijo_unit se calcula dividiendo los fijos totales entre TODAS las unidades de todos los productos, NO entre las unidades de un solo producto.
+REGLAS DEL JSON (TÚ NO HACES CUENTAS — SOLO ENTREGAS LOS DATOS TAL COMO LOS DIJO EL EMPRENDEDOR):
+- La app calcula TODO: conversión de monedas, gastos fijos por unidad, comisiones, costo total, precio mínimo, precio recomendado, ganancias. NO incluyas ningún subtotal, total, costo por unidad ni ganancia: no existen en este formato.
+- moneda: símbolo de la moneda del negocio ("€", "$"). moneda_codigo: su código ISO ("EUR", "ARS", "MXN", "COP", "CLP", "USD"...).
+- fijos_mensuales: un elemento por gasto fijo, con el monto TAL COMO lo pagan y cada_meses = cada cuántos meses lo pagan (1 mensual, 3 trimestral, 12 anual). Una herramienta con vida útil va aquí: monto = lo que costó, cada_meses = años de vida útil × 12. Gastos ocasionales sin frecuencia definida NO van (ver REGLA 7). Publicidad mensual variable va aquí.
+- costos_unit (dentro de cada producto): un elemento por insumo/costo que se paga por cada unidad vendida (materiales, embalaje, envío que paga el emprendedor, costo del proveedor...). monto = lo que pagó; cantidad = cuántas se usan por unidad vendida (por defecto 1); rinde = cuántas unidades salen de esa compra (por defecto 1). Ejemplo: pack de 100 bolsas a 20 y usa 2 por producto → monto 20, cantidad 2, rinde 100. NO dividas tú.
+- Moneda de cada monto: si está en una moneda distinta a la del negocio, pon "moneda" con el código ISO ("USD") y declara en tipo_cambio cuánto vale 1 unidad de esa moneda en la moneda del negocio (ej: "1 USD = 0.92 EUR" → {"USD":0.92}). Si el emprendedor no dio el tipo de cambio, pregúntaselo ANTES de generar los datos. Si el monto está en la moneda del negocio, omite "moneda" o repite el código ISO del negocio.
+- costos_pct: costos que son un porcentaje del precio de venta (comisión de plataforma, comisión de tarjeta/medios de pago, IVA/IRPF sobre facturación, devoluciones como % estimado). pct = número (14.1 significa 14,1%). El nombre NO lleva el porcentaje; la app lo agrega. Los costos_pct del nivel superior se aplican a TODOS los productos; los de dentro de un producto solo a ese. Cada porcentaje aparece UNA sola vez. Si la comisión total ya incluye los medios de pago, no los repitas.
+- precio: precio de venta de UNA unidad. unidades_mes: unidades vendidas al mes de ese producto. tiempo_horas: horas por unidad (0 si no aplica). valor_hora: 0 si no lo definió; la app agrega la mano de obra SOLO si valor_hora > 0 (no la incluyas tú en costos_unit).
+- Todos los montos son números (25.76, no "25,76" ni "€25.76"). Un concepto una sola vez, sin duplicados.
 - consejo_cualitativo: Consejo personalizado SIN NINGÚN NÚMERO. Solo observaciones cualitativas, sugerencias y estrategias basadas en lo que aprendiste del negocio. NUNCA menciones cifras, porcentajes ni montos — la app muestra los números correctos automáticamente. Ejemplos buenos: "Tu alquiler y cuota de autónomo son los gastos que más pesan por unidad. Podrías considerar trabajar desde casa para reducir fijos." Ejemplos MALOS: "Estás perdiendo €8,76 por unidad" (eso lo muestra la app, no tú).
-- Si valor_hora es 0 (no definido), NO incluyas mano de obra en el desglose NI en el costo_total. NUNCA uses un valor de mercado como sustituto en el desglose — eso lo hace la app automáticamente en la sección "Tu hora de trabajo". Si incluyes mano de obra con valor_hora=0, los números se duplican y el análisis queda mal. Esto es un error grave.
-- desglose: cada concepto UNA sola vez. Sin duplicados.
-- REGLA CRÍTICA DE PORCENTAJES: cuando un costo se calcula como porcentaje del precio de venta (impuestos sobre facturación, comisiones de plataforma, comisiones de tarjetas/medios de pago), el nombre del concepto DEBE incluir el porcentaje explícitamente. EJEMPLOS CORRECTOS: "Impuestos s/facturación 20%", "Comisión Shopify 2%", "Comisión tarjetas 1.5%", "IVA/IRPF 20%". EJEMPLOS INCORRECTOS: "Impuestos estimados (IVA/IRPF)", "Comisiones plataforma y pago" (sin el %). Esta regla es OBLIGATORIA — sin el porcentaje en el nombre, la app no puede calcular el precio correcto.
-- tiempo_horas y valor_hora: si no definió valor hora, valor_hora=0, completar mercado bajo/medio/alto según rubro+país.
+- valor_hora_mercado_bajo/medio/alto: según rubro + país (estas tres cifras sí las estimas tú).
+- LISTA DE CONTROL OBLIGATORIA ANTES DE ENTREGAR LOS DATOS: confirma que ya preguntaste y registraste (o que el emprendedor te dijo que no aplica) CADA uno de estos puntos: precio y unidades por mes de cada producto; costos directos de cada producto; tiempo por unidad y valor hora; gastos fijos (espacio, servicios, internet, personal, software, otros, publicidad, impuestos fijos); impuestos sobre facturación en % (3.9); envío (4.1); comisiones de plataforma (4.2); medios de pago (4.3); devoluciones (4.5); margen (5.1); tipo de cambio si hay otra moneda. Si falta cualquiera, NO entregues los datos todavía: pregunta lo que falte, una sola pregunta por mensaje. Revisa también que todos los productos y todos los costos que el emprendedor te dio estén en el JSON.
 - FORMATO DE SALIDA OBLIGATORIO: escribe exactamente [RESULTADOS_LISTOS] y en la misma línea el JSON plano sin espacios entre medio. PROHIBIDO ABSOLUTO usar bloques de código, backticks o markdown. El JSON va en texto plano directo.
-- EJEMPLO CORRECTO: [RESULTADOS_LISTOS]{"modo":"single",...}
+- EJEMPLO CORRECTO: [RESULTADOS_LISTOS]{"version":2,"negocio":"...",...}
 - EJEMPLO INCORRECTO (NUNCA hacer esto): poner backticks, bloques json, o saltos entre [RESULTADOS_LISTOS] y el JSON.
 - margen_elegido: el porcentaje que eligió el emprendedor (20, 30 o 40).
 
@@ -1268,6 +1273,7 @@ Durante TODO el análisis, si el usuario menciona un valor en una moneda DISTINT
 2. Preguntar: "Vi que me diste ese valor en [moneda mencionada]. ¿Lo uso en [moneda extranjera] tal cual, o lo conviertes a [moneda del negocio]?"
 3. Si el negocio compra en una moneda y vende en otra (ej: costos en USD, ventas en €): registrar la moneda de compra y la de venta por separado. Pedirle al usuario que confirme el tipo de cambio que usa o decirle "Si prefieres, usamos el tipo de cambio actual — ¿cuánto está el dólar para ti?"
 4. NUNCA mezclar monedas silenciosamente. Siempre confirmar antes de registrar un valor en moneda distinta.
+5. NO conviertas montos ni digas el resultado de una conversión en la conversación: anota el monto original con su moneda y el tipo de cambio; la app hace la conversión y se la muestra al emprendedor.
 
 ## REGLAS CRÍTICAS
 - NUNCA dos preguntas en el mismo mensaje
@@ -1326,17 +1332,19 @@ window.sendMessage = async function() {
         if (startIdx !== -1 && endIdx !== -1) {
           jsonStr = jsonStr.substring(startIdx, endIdx + 1);
         }
-        const data = JSON.parse(jsonStr);
+        const data = prepareResult(JSON.parse(jsonStr));
         window.lastResultsData = data;
         conversationHistory.push({ role: 'assistant', content: response });
         await saveConversation();
         updateProgress(5);
-        setTimeout(() => showResults(data), 600);
+        setTimeout(() => showConfirmOrResults(data), 600);
       } catch(e) {
         console.error('JSON parse error:', e);
-        // Ask AI to reformat
+        // Ask AI to reformat (o a completar lo que falta, si el motor de cálculo rechazó los datos)
         conversationHistory.push({ role: 'assistant', content: response });
-        conversationHistory.push({ role: 'user', content: 'Por favor muestra los resultados finales.' });
+        conversationHistory.push({ role: 'user', content: e.engineErrors
+          ? '[Sistema] La app no pudo calcular con los datos recibidos: ' + e.engineErrors.join(' ') + ' Pregunta al emprendedor lo que falte (una sola pregunta a la vez) y cuando lo tengas vuelve a generar los resultados.'
+          : 'Por favor muestra los resultados finales.' });
         const retry = neutralizeVoseo(await callAI(conversationHistory));
         hideTyping();
         if (retry.includes('[RESULTADOS_LISTOS]')) {
@@ -1346,11 +1354,12 @@ window.sendMessage = async function() {
             const si = retryJson.indexOf('{');
             const ei = retryJson.lastIndexOf('}');
             if (si !== -1 && ei !== -1) retryJson = retryJson.substring(si, ei + 1);
-            const data = JSON.parse(retryJson);
+            const data = prepareResult(JSON.parse(retryJson));
+            window.lastResultsData = data;
             conversationHistory.push({ role: 'assistant', content: retry });
             await saveConversation();
             updateProgress(5);
-            setTimeout(() => showResults(data), 600);
+            setTimeout(() => showConfirmOrResults(data), 600);
           } catch(e2) {
             addMessage('ai', 'Hubo un problema al generar los resultados. Escribe "muéstrame los resultados" para intentar de nuevo.');
           }
@@ -1367,19 +1376,19 @@ window.sendMessage = async function() {
         const si = cleaned.indexOf('{');
         const ei = cleaned.lastIndexOf('}');
         if (si !== -1 && ei !== -1) {
-          const candidate = JSON.parse(cleaned.substring(si, ei + 1));
-          if (candidate.modo === 'single' || candidate.modo === 'multi') {
-            fallbackData = candidate;
+          const parsedFb = JSON.parse(cleaned.substring(si, ei + 1));
+          if (parsedFb.modo === 'single' || parsedFb.modo === 'multi' || PymeEngine.isRaw(parsedFb)) {
+            fallbackData = prepareResult(parsedFb);
           }
         }
-      } catch(e) { /* no era JSON de resultados */ }
+      } catch(e) { /* no era JSON de resultados (o el motor lo rechazó: se muestra el texto) */ }
 
       if (fallbackData) {
         window.lastResultsData = fallbackData;
         conversationHistory.push({ role: 'assistant', content: response });
         await saveConversation();
         updateProgress(5);
-        setTimeout(() => showResults(fallbackData), 600);
+        setTimeout(() => showConfirmOrResults(fallbackData), 600);
       } else {
         addMessage('ai', response);
         conversationHistory.push({ role: 'assistant', content: response });
@@ -1419,6 +1428,129 @@ function detectAndUpdateBlock(msg) {
   } else if (lower.includes('materia prima') || lower.includes('insumo') || lower.includes('cuánto tardas')) {
     updateProgress(2);
   }
+}
+
+// ── Motor de cálculo: la IA entrega datos crudos (formato v2) y las cuentas las hace calc-engine.js ──
+// Si la IA entrega el formato anterior (con desglose ya calculado) se mantiene la red de seguridad.
+function prepareResult(parsed) {
+  if (PymeEngine.isRaw(parsed)) {
+    const r = PymeEngine.compute(parsed);
+    if (!r.ok) {
+      const err = new Error('El motor de cálculo rechazó los datos');
+      err.engineErrors = r.errors;
+      throw err;
+    }
+    r.data._resumen = r.resumen;
+    r.data._warnings = r.warnings;
+    return r.data;
+  }
+  return fixPctItems(parsed);
+}
+
+function fmtN(n) { return Number(n).toLocaleString('es-ES', { maximumFractionDigits: 4 }); }
+
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+// Pantalla "Confirma tus datos": se muestra lo que la IA entendió, ya convertido, antes de calcular.
+function showConfirmOrResults(data) {
+  if (data && data._resumen) showConfirm(data);
+  else showResults(data);
+}
+
+function showConfirm(data) {
+  showScreen('results-screen');
+  window.lastResultsData = data;
+  const rs = data._resumen;
+  const c = rs.moneda || '€';
+  const row = (label, value) => `<div class="cost-row"><span class="cost-label">${label}</span><span class="cost-value">${value}</span></div>`;
+
+  const productCards = rs.productos.map(p => {
+    const items = p.items.map(it => {
+      const orig = it.moneda ? `${escHtml(it.moneda)} ${fmt(it.monto)} → ` : '';
+      const nota = (it.cantidad !== 1 || it.rinde !== 1) ? ` <span style="color:var(--text3);font-size:12px;">(${fmt(it.cantidad)} por unidad, la compra rinde ${fmt(it.rinde)})</span>` : '';
+      return row(escHtml(it.concepto) + nota, orig + c + fmt(it.valor));
+    }).join('');
+    const pcts = p.pct.map(x => row(`${escHtml(x.concepto)} <span style="color:var(--text3);font-size:12px;">(${fmtN(x.pct)}% del precio)</span>`, c + fmt(x.valor))).join('');
+    const mano = p.manoDeObra > 0 ? row(`Mano de obra <span style="color:var(--text3);font-size:12px;">(${fmt(p.tiempo_horas)} h × ${c}${fmt(p.valor_hora)}/h)</span>`, c + fmt(p.manoDeObra)) : '';
+    const tiempo = p.manoDeObra <= 0 && p.tiempo_horas > 0 ? row('Tiempo por unidad', `${fmt(p.tiempo_horas)} h · valor hora sin definir`) : '';
+    return `
+      <div class="section-card">
+        <div class="section-card-header">📦 ${escHtml(p.producto)}</div>
+        ${row('Precio de venta', c + fmt(p.precio))}
+        ${row('Unidades al mes', fmt(p.unidades).replace(/,00$/, ''))}
+        ${items}${mano}${pcts}${tiempo}
+      </div>`;
+  }).join('');
+
+  const fijosRows = rs.fijos.map(f => {
+    const simb = f.moneda ? escHtml(f.moneda) + ' ' : c;
+    const nota = (f.moneda || f.cada_meses !== 1)
+      ? ` <span style="color:var(--text3);font-size:12px;">(${simb}${fmt(f.monto)}${f.cada_meses !== 1 ? ' cada ' + fmt(f.cada_meses).replace(/,00$/, '') + ' meses' : ''})</span>` : '';
+    return row(escHtml(f.concepto) + nota, c + fmt(f.mensual) + '/mes');
+  }).join('');
+  const fijosCard = rs.fijos.length ? `
+      <div class="section-card">
+        <div class="section-card-header">🏠 Gastos fijos mensuales</div>
+        ${fijosRows}
+        <div class="cost-row total"><span class="cost-label">Total al mes</span><span class="cost-value">${c}${fmt(rs.fijosTotal)}</span></div>
+        ${row(`Repartido entre ${fmt(rs.unidadesTotal).replace(/,00$/, '')} unidades al mes`, c + fmt(rs.fijoUnit) + ' por unidad')}
+      </div>` : '';
+
+  const cambio = rs.tipoCambio.length ? `<div class="section-card">
+        <div class="section-card-header">💱 Tipo de cambio usado</div>
+        ${rs.tipoCambio.map(t => row(`1 ${escHtml(t.moneda)}`, `${c}${fmtN(t.tasa)}`)).join('')}
+      </div>` : '';
+
+  const warn = (data._warnings || []).length ? `<div class="advice-card" style="border-left-color:var(--warn);"><div class="advice-title" style="color:var(--warn);">⚠️ Revisa esto</div><div class="advice-text">${data._warnings.map(escHtml).join('<br>')}</div></div>` : '';
+
+  document.getElementById('results-body').innerHTML = `
+    <div class="results-title-section">
+      <div class="results-eyebrow">Antes de calcular</div>
+      <div class="results-title">Confirma tus datos</div>
+      <div class="results-subtitle">Revisa que esto es lo que me contaste. Con estos datos calculo todo.</div>
+    </div>
+    ${productCards}${fijosCard}${cambio}
+    <div class="section-card">${row('Margen que elegiste', fmtN(rs.margen) + '%')}</div>
+    ${warn}
+    <div class="results-actions">
+      <button class="btn-primary" onclick="confirmResults()">Todo correcto, ver resultados →</button>
+      <button class="btn-secondary" onclick="correctData()">Corregir un dato</button>
+    </div>`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.confirmResults = function() {
+  if (window.lastResultsData) showResults(window.lastResultsData);
+};
+
+window.correctData = function() {
+  showScreen('app-screen');
+  const msg = '¿Qué dato quieres corregir? Dímelo y vuelvo a calcular.';
+  addMessage('ai', msg);
+  conversationHistory.push({ role: 'assistant', content: msg });
+  saveConversation();
+  const chatContainer = document.getElementById('chat-messages');
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+};
+
+// ── Red de seguridad: conceptos porcentuales con valor 0 ──
+// Si la IA deja en 0 (o sin valor) un concepto como "Comisión Etsy 14.1%", la app lo descartaria
+// (filtra valor <= 0) y el costo, el margen y el precio recomendado quedarian mal. Se calcula el
+// monto sobre el precio actual del producto, igual que hace la IA cuando responde bien.
+function fixPctItems(data) {
+  if (!data || typeof data !== 'object') return data;
+  const fix = (item, precio) => {
+    if (!item || !Array.isArray(item.desglose) || !(precio > 0)) return;
+    item.desglose.forEach(r => {
+      const m = r && typeof r.concepto === 'string' && r.concepto.match(/(\d+(?:\.\d+)?)\s*%/);
+      if (m && !(r.valor > 0)) r.valor = Math.round(parseFloat(m[1]) / 100 * precio * 100) / 100;
+    });
+  };
+  if (data.modo === 'multi' && Array.isArray(data.productos)) data.productos.forEach(p => fix(p, p.precio_actual));
+  else fix(data, data.precio_actual);
+  return data;
 }
 
 // ── Red de seguridad anti-voseo ──
@@ -1513,7 +1645,10 @@ async function callAI(messages) {
   }
 
   const data = await response.json();
-  return data.content[0].text;
+  // La respuesta puede empezar con bloques "thinking": tomar el texto por tipo, no por posicion.
+  const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  if (!text) throw new Error('Respuesta vacía del modelo' + (data.stop_reason ? ' (' + data.stop_reason + ')' : ''));
+  return text;
 }
 
 // ── Voice input (grabación + transcripción server-side) ──
@@ -1781,6 +1916,7 @@ function showResults(data) {
     const { prec: precRecVerificado, costoReal: costoRealAlRec } = calcPrecioRec(desgloseItems, costoTotal, data.margen_elegido || 30);
     const { prec: precioMinimo } = calcPrecioRec(desgloseItems, costoTotal, 0);
     const tienePctCostos = desgloseItems.some(r => /\d+(?:\.\d+)?\s*%/.test(r.concepto));
+    const minimoSobreCosto = precioMinimo > costoTotal; // true si hoy cobras por debajo del punto de equilibrio
     const ganRec = Math.round((precRecVerificado - costoRealAlRec) * 100) / 100;
     const ganMesReal = Math.round(gan * data.unidades_mes * 100) / 100;
     const ganMesRec = Math.round(ganRec * data.unidades_mes * 100) / 100;
@@ -1820,7 +1956,7 @@ function showResults(data) {
           <div class="metric-card" style="grid-column:1/-1;"><div class="metric-label">Ganancia mensual actual</div><div class="metric-value" style="color:${ganMesReal<0?'var(--danger)':'var(--text)'}">${c}${fmt(ganMesReal)}</div><div class="metric-desc">Con ${data.unidades_mes} unidades/mes a tu precio actual</div></div></div></div>
       <div class="results-step"><div class="results-step-label">③ Lo que deberías cobrar</div>
         <div class="metrics-grid" style="grid-template-columns:repeat(2,1fr);">
-          <div class="metric-card danger-border"><div class="metric-label">Precio mínimo</div><div class="metric-value">${c}${fmt(precioMinimo)}</div><div class="metric-desc">${tienePctCostos ? 'Punto de equilibrio real — a este precio, las comisiones % también bajan' : 'Punto de equilibrio real — por debajo pierdes dinero'}</div></div>
+          <div class="metric-card danger-border"><div class="metric-label">Precio mínimo</div><div class="metric-value">${c}${fmt(precioMinimo)}</div><div class="metric-desc">${tienePctCostos ? (minimoSobreCosto ? 'Punto de equilibrio real — al subir el precio, las comisiones % también suben' : 'Punto de equilibrio real — a este precio, las comisiones % también bajan') : 'Punto de equilibrio real — por debajo pierdes dinero'}</div></div>
           <div class="metric-card accent-border"><div class="metric-label">Precio recomendado</div><div class="metric-value" style="color:var(--accent)">${c}${fmt(precRecVerificado)}</div><div class="metric-desc">Con margen del ${data.margen_elegido||30}% — ${(data.margen_elegido||30)===20?'conservador':(data.margen_elegido||30)===40?'ambicioso':'recomendado'}</div></div></div>
         <div class="results-gap-note">${data.precio_actual<precRecVerificado?`<span class="gap-warn">⬆️ Diferencia con tu precio actual: ${c}${fmt(precRecVerificado-data.precio_actual)} por unidad</span>`:`<span class="gap-ok">✅ Tu precio actual ya está por encima del recomendado</span>`}</div></div>
       <div class="results-step"><div class="results-step-label">④ Qué ganarías al precio recomendado</div>
@@ -1834,7 +1970,9 @@ function showResults(data) {
           ${gan < 0 ? `pierdes <strong style="color:var(--danger)">${c}${fmt(Math.abs(gan))}</strong> por cada venta` : `ganas <strong style="color:var(--success)">${c}${fmt(gan)}</strong> por unidad`}.
           ${gan < 0 ? `Eso son <strong style="color:var(--danger)">${c}${fmt(Math.abs(gan * data.unidades_mes))}</strong> de pérdida mensual con ${data.unidades_mes} unidades.` : `Eso son <strong>${c}${fmt(gan * data.unidades_mes)}</strong> de ganancia mensual con ${data.unidades_mes} unidades.`}
           Para un margen del ${data.margen_elegido || 30}%, tu precio debería ser <strong style="color:var(--success)">${c}${fmt(precRecVerificado)}</strong>.
-          ${tienePctCostos ? ` El precio mínimo (${c}${fmt(precioMinimo)}) puede verse más bajo que tu costo actual porque parte de tus costos son comisiones o impuestos que se calculan como % del precio — a un precio menor, esos montos también bajan.` : ''}
+          ${tienePctCostos ? (minimoSobreCosto
+            ? ` El precio mínimo (${c}${fmt(precioMinimo)}) es más alto que tu costo actual (${c}${fmt(costoTotal)}) porque parte de tus costos son comisiones o impuestos que se calculan como % del precio — al subir el precio, esos montos también suben.`
+            : ` El precio mínimo (${c}${fmt(precioMinimo)}) puede verse más bajo que tu costo actual porque parte de tus costos son comisiones o impuestos que se calculan como % del precio — a un precio menor, esos montos también bajan.`) : ''}
         </div>
       </div>
       ${data.consejo_cualitativo?`<div class="advice-card"><div class="advice-title">💡 Consejo para tu negocio</div><div class="advice-text">${data.consejo_cualitativo}</div></div>`:''}
@@ -1853,22 +1991,9 @@ function fmt(n) {
 
 // Resuelve la dependencia circular de costos que son % del precio (impuestos, comisiones)
 // P = costosFijos / (1 - pct_costos - margen)
+// (la fórmula vive en calc-engine.js, donde tiene pruebas automáticas)
 function calcPrecioRec(desgloseItems, costoTotal, margenPct) {
-  const margenDec = margenPct / 100;
-  let totalPct = 0, costosFijos = 0;
-  (desgloseItems || []).forEach(item => {
-    const m = item.concepto.match(/(\d+(?:\.\d+)?)\s*%/);
-    if (m) totalPct += parseFloat(m[1]) / 100;
-    else costosFijos += item.valor;
-  });
-  const den = 1 - totalPct - margenDec;
-  if (totalPct > 0 && den > 0.05) {
-    const prec = Math.round((costosFijos / den) * 100) / 100;
-    const costoReal = Math.round((costosFijos + totalPct * prec) * 100) / 100;
-    return { prec, costoReal };
-  }
-  const prec = Math.round((costoTotal / (1 - margenDec)) * 100) / 100;
-  return { prec, costoReal: costoTotal };
+  return PymeEngine.calcPrecioRec(desgloseItems, costoTotal, margenPct);
 }
 
 function buildResultCardHTML(d) {
