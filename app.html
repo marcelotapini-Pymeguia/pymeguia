@@ -238,6 +238,7 @@
     font-size: 13px;
     color: var(--accent);
     font-weight: 600;
+    overflow: hidden;
   }
   .btn-menu {
     background: transparent;
@@ -301,8 +302,18 @@
     display: block;
   }
   .msg-avatar.user {
-    background: var(--surface2);
+    background: var(--accent-light);
     border: 1px solid var(--border);
+    color: var(--accent);
+    font-weight: 600;
+    overflow: hidden;
+  }
+  .msg-avatar.user img,
+  .user-avatar-placeholder img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
   }
 
   .msg-bubble {
@@ -934,11 +945,25 @@ async function loadAndShowUserData() {
   }
 }
 
+// Avatar del usuario: la foto de su cuenta de Google; mientras carga, o si no tiene foto
+// o no se puede cargar, se muestra su inicial.
+function fillUserAvatar(el) {
+  if (!currentUser) { el.textContent = '👤'; return; }
+  const name = currentUser.displayName || currentUser.email || '?';
+  el.textContent = name.charAt(0).toUpperCase();
+  const photo = currentUser.photoURL;
+  if (!photo) return;
+  const img = new Image();
+  img.referrerPolicy = 'no-referrer'; // Google a veces bloquea la imagen si llega con referrer
+  img.alt = name;
+  img.onload = () => { el.textContent = ''; el.appendChild(img); };
+  img.src = photo;
+}
+
 function setUserAvatar() {
   const initial = document.getElementById('user-initial');
   if (!initial || !currentUser) return;
-  const name = currentUser.displayName || currentUser.email || '?';
-  initial.textContent = name.charAt(0).toUpperCase();
+  fillUserAvatar(initial);
 }
 
 // ── Login with Google ──
@@ -1773,7 +1798,7 @@ function addMessage(role, text, isError = false) {
   const avatar = document.createElement('div');
   avatar.className = `msg-avatar ${role}`;
   if (role === 'ai') avatar.innerHTML = '<img src="assets/04_isotipo_PG.png" alt="PymeGuía">';
-  else avatar.textContent = '👤';
+  else fillUserAvatar(avatar);
 
   const bubble = document.createElement('div');
   bubble.className = `msg-bubble ${isError ? 'msg-error' : ''}`;
