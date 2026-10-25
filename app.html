@@ -735,6 +735,38 @@
     .chat-input-area { padding: 10px 14px 16px; }
     .results-body { padding: 20px 14px 48px; }
   }
+
+  /* ── Aviso de devolución (piloto) ── */
+  .feedback-nudge {
+    position: fixed;
+    left: 50%;
+    bottom: 16px;
+    transform: translate(-50%, 140%);
+    width: calc(100% - 32px);
+    max-width: 480px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid #0F6E56;
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(17,24,39,0.14);
+    padding: 14px 16px;
+    z-index: 900;
+    transition: transform .35s ease;
+  }
+  .feedback-nudge.visible { transform: translate(-50%, 0); }
+  .feedback-nudge-text { font-size: 14px; line-height: 1.45; color: var(--text); margin-bottom: 12px; }
+  .feedback-nudge-text strong { color: #0F6E56; }
+  .feedback-nudge-actions { display: flex; gap: 10px; align-items: center; }
+  .feedback-nudge-go {
+    background: #0F6E56; color: #fff; border: none; border-radius: var(--radius-sm);
+    padding: 9px 16px; font-family: var(--font); font-size: 14px; font-weight: 600;
+    text-decoration: none; cursor: pointer;
+  }
+  .feedback-nudge-go:hover { background: #0C5A46; }
+  .feedback-nudge-later {
+    background: none; border: none; color: var(--text2); font-family: var(--font);
+    font-size: 13px; cursor: pointer; padding: 9px 6px;
+  }
 </style>
 </head>
 <body>
@@ -834,6 +866,15 @@
   <div class="results-body" id="results-body"></div>
 </div>
 
+<!-- Aviso de devolución (piloto) -->
+<div id="feedback-nudge" class="feedback-nudge" role="dialog" aria-live="polite" aria-label="Danos tu opinión" hidden>
+  <div class="feedback-nudge-text">🙌 <strong>¿Te sirvió?</strong> Nos ayudaría muchísimo tu opinión para mejorar PymeGuía. Son 2 minutos.</div>
+  <div class="feedback-nudge-actions">
+    <a class="feedback-nudge-go" href="https://pymeguia.com/devolucion" target="_blank" rel="noopener" onclick="feedbackNudgeGo()">Dar mi opinión</a>
+    <button class="feedback-nudge-later" type="button" onclick="feedbackNudgeLater()">Más tarde</button>
+  </div>
+</div>
+
 <!-- Motor de cálculo (todas las cuentas se hacen aquí, no en la IA) -->
 <script src="calc-engine.js"></script>
 
@@ -901,6 +942,10 @@ function clearSession() {
   window.lastResultsData = null;
   const chatEl = document.getElementById('chat-messages');
   if (chatEl) chatEl.innerHTML = '';
+  if (feedbackNudgeTimer) { clearTimeout(feedbackNudgeTimer); feedbackNudgeTimer = null; }
+  feedbackNudgeShownThisSession = false;
+  const nudgeEl = document.getElementById('feedback-nudge');
+  if (nudgeEl) { nudgeEl.classList.remove('visible'); nudgeEl.hidden = true; }
 }
 
 // ── Auth state listener — handles page load and sign out only ──
@@ -2007,7 +2052,70 @@ function showResults(data) {
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  scheduleFeedbackNudge();
 }
+
+// ── Aviso de devolución (piloto) ──
+// Aparece unos segundos después del primer resultado completo.
+// "Más tarde" lo vuelve a mostrar una sola vez, en una sesión posterior.
+// Si la persona abre el formulario, no aparece nunca más.
+const FEEDBACK_NUDGE_DELAY_MS = 25000;
+const FEEDBACK_NUDGE_MAX_SHOWS = 2;
+let feedbackNudgeTimer = null;
+let feedbackNudgeShownThisSession = false;
+
+async function getFeedbackNudgeState() {
+  if (!currentUser) return null;
+  try {
+    const snap = await getDoc(doc(db, 'users', currentUser.uid));
+    return (snap.exists() && snap.data().feedbackNudge) || { shows: 0, clicked: false };
+  } catch (e) {
+    console.error('feedbackNudge read error:', e);
+    return null;
+  }
+}
+
+async function saveFeedbackNudgeState(patch) {
+  if (!currentUser) return;
+  try {
+    const current = (await getFeedbackNudgeState()) || { shows: 0, clicked: false };
+    await updateDoc(doc(db, 'users', currentUser.uid), {
+      feedbackNudge: { ...current, ...patch, updatedAt: new Date().toISOString() }
+    });
+  } catch (e) {
+    console.error('feedbackNudge save error:', e);
+  }
+}
+
+async function scheduleFeedbackNudge() {
+  if (feedbackNudgeShownThisSession || feedbackNudgeTimer) return;
+  const state = await getFeedbackNudgeState();
+  if (!state || state.clicked || (state.shows || 0) >= FEEDBACK_NUDGE_MAX_SHOWS) return;
+  feedbackNudgeTimer = setTimeout(async () => {
+    feedbackNudgeTimer = null;
+    if (feedbackNudgeShownThisSession) return;
+    feedbackNudgeShownThisSession = true;
+    const el = document.getElementById('feedback-nudge');
+    el.hidden = false;
+    requestAnimationFrame(() => el.classList.add('visible'));
+    await saveFeedbackNudgeState({ shows: (state.shows || 0) + 1 });
+  }, FEEDBACK_NUDGE_DELAY_MS);
+}
+
+function hideFeedbackNudge() {
+  const el = document.getElementById('feedback-nudge');
+  el.classList.remove('visible');
+  setTimeout(() => { el.hidden = true; }, 400);
+}
+
+window.feedbackNudgeGo = function() {
+  hideFeedbackNudge();
+  saveFeedbackNudgeState({ clicked: true });
+};
+
+window.feedbackNudgeLater = function() {
+  hideFeedbackNudge();
+};
 
 function fmt(n) {
   if (n == null) return '—';
