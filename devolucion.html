@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Devolución PymeGuía</title>
+<link rel="icon" type="image/png" href="assets/04_isotipo_PG.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #F2F4F5;
+    --surface: #FFFFFF;
+    --surface-2: #FBFCFC;
+    --primary: #0F6E56;
+    --primary-hover: #0C5A46;
+    --accent: #20A17A;
+    --accent-soft: #D6F1E6;
+    --warm: #F4A261;
+    --text: #1F2933;
+    --text-muted: #6B7280;
+    --border: #E1E6E6;
+    --shadow: 0 1px 2px rgba(31,41,51,0.04), 0 8px 24px rgba(31,41,51,0.06);
+    --danger: #C1554A;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F1A17;
+      --surface: #16241F;
+      --surface-2: #1B2B25;
+      --primary: #3FC79B;
+      --primary-hover: #59D4AB;
+      --accent: #2CB78B;
+      --accent-soft: #1E3830;
+      --warm: #F4A261;
+      --text: #EAF2EF;
+      --text-muted: #9AB0A8;
+      --border: #263832;
+      --shadow: 0 1px 2px rgba(0,0,0,0.2), 0 12px 32px rgba(0,0,0,0.35);
+      --danger: #E08277;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0F1A17;
+    --surface: #16241F;
+    --surface-2: #1B2B25;
+    --primary: #3FC79B;
+    --primary-hover: #59D4AB;
+    --accent: #2CB78B;
+    --accent-soft: #1E3830;
+    --warm: #F4A261;
+    --text: #EAF2EF;
+    --text-muted: #9AB0A8;
+    --border: #263832;
+    --shadow: 0 1px 2px rgba(0,0,0,0.2), 0 12px 32px rgba(0,0,0,0.35);
+    --danger: #E08277;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.5;
+    padding: 40px 16px 64px;
+  }
+
+  .wrap { max-width: 640px; margin: 0 auto; }
+
+  header.top { display: flex; align-items: center; justify-content: center; margin-bottom: 28px; }
+  header.top img { height: 34px; width: auto; }
+
+  header.top img.logo-light { display: block; }
+  header.top img.logo-dark { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) header.top img.logo-light { display: none; }
+    :root:not([data-theme="light"]) header.top img.logo-dark { display: block; }
+  }
+  :root[data-theme="dark"] header.top img.logo-light { display: none; }
+  :root[data-theme="dark"] header.top img.logo-dark { display: block; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 36px 32px;
+  }
+
+  .intro h1 { font-size: 1.5rem; font-weight: 600; margin: 0 0 8px; text-wrap: balance; }
+  .intro p { color: var(--text-muted); font-size: 0.95rem; margin: 0 0 4px; max-width: 46ch; }
+  .intro { margin-bottom: 28px; }
+
+  form { display: flex; flex-direction: column; gap: 26px; }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
+
+  label.q { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+  label.q .opt { font-weight: 400; color: var(--text-muted); font-size: 0.82rem; }
+
+  input[type="text"], textarea {
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 13px;
+    width: 100%;
+    resize: vertical;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  input[type="text"]::placeholder, textarea::placeholder { color: var(--text-muted); opacity: 0.75; }
+  input[type="text"]:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  textarea { min-height: 84px; }
+
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { position: relative; }
+  .pill input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .pill span {
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    font-size: 0.88rem;
+    color: var(--text);
+    transition: all .15s ease;
+    user-select: none;
+  }
+  .pill input:checked + span { background: var(--accent-soft); border-color: var(--accent); color: var(--primary); font-weight: 500; }
+  .pill input:focus-visible + span { box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  .stars { display: flex; gap: 4px; }
+  .star { position: relative; cursor: pointer; }
+  .star input { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+  .star svg { width: 34px; height: 34px; fill: var(--surface-2); stroke: var(--border); stroke-width: 1.3; transition: fill .12s ease, stroke .12s ease; }
+  .star.filled svg { fill: var(--warm); stroke: var(--warm); }
+  .rating-label { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; min-height: 1.1em; }
+
+  button[type="submit"] {
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #FFFFFF;
+    background: var(--primary);
+    border: none;
+    border-radius: 12px;
+    padding: 14px 20px;
+    cursor: pointer;
+    transition: background .15s ease, transform .1s ease;
+    margin-top: 6px;
+  }
+  button[type="submit"]:hover { background: var(--primary-hover); }
+  button[type="submit"]:active { transform: scale(0.99); }
+  button[type="submit"]:disabled { opacity: 0.6; cursor: default; }
+
+  .fineprint { font-size: 0.78rem; color: var(--text-muted); text-align: center; margin-top: 14px; }
+  .status-msg { font-size: 0.85rem; text-align: center; min-height: 1.2em; margin-top: -8px; }
+  .status-msg.error { color: var(--danger); }
+
+  .thanks { display: none; text-align: center; padding: 12px 4px 4px; }
+  .thanks img { height: 56px; margin-bottom: 18px; }
+  .thanks h2 { font-size: 1.3rem; font-weight: 600; margin: 0 0 10px; }
+  .thanks p { color: var(--text-muted); font-size: 0.95rem; max-width: 42ch; margin: 0 auto; }
+  .card.done .form-state { display: none; }
+  .card.done .thanks { display: block; }
+
+</style>
+</head>
+<body>
+<div class="wrap" id="formView">
+  <header class="top">
+    <img class="logo-light" src="assets/03_logo_horizontal.png" alt="PymeGuía">
+    <img class="logo-dark" src="assets/06_logo_negativo_blanco.png" alt="PymeGuía">
+  </header>
+
+  <div class="card" id="card">
+    <div class="form-state">
+      <div class="intro">
+        <h1>Cuéntanos cómo te fue</h1>
+        <p>Estuviste probando PymeGuía y tu devolución nos ayuda un montón a mejorarla antes del lanzamiento. Son 2 minutos, gracias por dedicarlos.</p>
+      </div>
+
+      <form id="feedbackForm" name="devolucion" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="devolucion">
+        <p hidden><label>No llenar este campo: <input name="bot-field" autocomplete="off" tabindex="-1"></label></p>
+        <div class="field-row">
+          <div class="field">
+            <label class="q" for="nombre">¿Cómo te llamas? <span class="opt">(opcional)</span></label>
+            <input type="text" id="nombre" name="nombre" placeholder="Tu nombre">
+          </div>
+          <div class="field">
+            <label class="q" for="emprendimiento">Tu emprendimiento o rubro <span class="opt">(opcional)</span></label>
+            <input type="text" id="emprendimiento" name="emprendimiento" placeholder="Ej: velas artesanales">
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="q">¿Hace cuánto estás probando PymeGuía?</label>
+          <div class="pills" data-group="tiempoUso">
+            <label class="pill"><input type="radio" name="tiempoUso" value="Recién empecé" required><span>Recién empecé</span></label>
+            <label class="pill"><input type="radio" name="tiempoUso" value="Unos días"><span>Unos días</span></label>
+            <label class="pill"><input type="radio" name="tiempoUso" value="Una semana o más"><span>Una semana o más</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="q">En general, ¿cómo calificarías tu experiencia con la app?</label>
+          <div class="stars" id="starRating" data-value="0">
+            <label class="star" data-v="1"><input type="radio" name="calificacion" value="1" required><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></label>
+            <label class="star" data-v="2"><input type="radio" name="calificacion" value="2"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></label>
+            <label class="star" data-v="3"><input type="radio" name="calificacion" value="3"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></label>
+            <label class="star" data-v="4"><input type="radio" name="calificacion" value="4"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></label>
+            <label class="star" data-v="5"><input type="radio" name="calificacion" value="5"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg></label>
+          </div>
+          <div class="rating-label" id="ratingLabel"></div>
+        </div>
+
+        <div class="field">
+          <label class="q">¿PymeGuía te ayudó a saber si tus precios cubren bien tus costos y te dejan ganancia?</label>
+          <div class="pills" data-group="precioAyuda">
+            <label class="pill"><input type="radio" name="precioAyuda" value="Sí, quedó claro" required><span>Sí, quedó claro</span></label>
+            <label class="pill"><input type="radio" name="precioAyuda" value="Más o menos"><span>Más o menos</span></label>
+            <label class="pill"><input type="radio" name="precioAyuda" value="Todavía no lo tengo claro"><span>Todavía no lo tengo claro</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="q">¿Cuánto pagarías por este servicio?</label>
+          <div class="pills" data-group="cuantoPagaria">
+            <label class="pill"><input type="radio" name="cuantoPagaria" value="No pagaría nada" required><span>No pagaría nada</span></label>
+            <label class="pill"><input type="radio" name="cuantoPagaria" value="Hasta $30 (~€27)"><span>Hasta $30 (~€27)</span></label>
+            <label class="pill"><input type="radio" name="cuantoPagaria" value="$30 – $50 (~€27 – €45)"><span>$30 – $50 (~€27 – €45)</span></label>
+            <label class="pill"><input type="radio" name="cuantoPagaria" value="Más de $50 (~€45+)"><span>Más de $50 (~€45+)</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="q" for="quesirvio">¿Qué fue lo que más te sirvió o te gustó?</label>
+          <textarea id="quesirvio" name="quesirvio" placeholder="Por ejemplo: entender de una vez si estaba cobrando bien, lo fácil que fue registrarme, etc." required></textarea>
+        </div>
+
+        <div class="field">
+          <label class="q" for="problemas">¿Encontraste algún problema, algo que no funcionó o que te costó entender?</label>
+          <textarea id="problemas" name="problemas" placeholder="Cuéntanos si algo te trabó, no cargó bien, o no se entendía"></textarea>
+        </div>
+
+        <div class="field">
+          <label class="q" for="cambios">¿Qué le cambiarías o qué le agregarías?</label>
+          <textarea id="cambios" name="cambios" placeholder="Tu idea, por más pequeña que parezca, nos sirve"></textarea>
+        </div>
+
+        <div class="field">
+          <label class="q">¿La recomendarías a otra persona con su propio emprendimiento?</label>
+          <div class="pills" data-group="recomendaria">
+            <label class="pill"><input type="radio" name="recomendaria" value="Sí, seguro" required><span>Sí, seguro</span></label>
+            <label class="pill"><input type="radio" name="recomendaria" value="Tal vez"><span>Tal vez</span></label>
+            <label class="pill"><input type="radio" name="recomendaria" value="No todavía"><span>No todavía</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="q" for="comentario">¿Algo más que quieras contarnos? <span class="opt">(opcional — deja aquí tu Instagram o mail si quieres que te contactemos)</span></label>
+          <textarea id="comentario" name="comentario" placeholder="Comentario libre, o tu contacto"></textarea>
+        </div>
+
+        <div class="status-msg" id="statusMsg"></div>
+        <button type="submit" id="submitBtn">Enviar mi devolución</button>
+        <p class="fineprint">Tu devolución queda registrada para el equipo de PymeGuía.</p>
+      </form>
+    </div>
+
+    <div class="thanks">
+      <img src="assets/04_isotipo_PG.png" alt="PymeGuía">
+      <h2>¡Gracias por tu tiempo!</h2>
+      <p>Tu devolución ya quedó registrada. Nos sirve un montón para seguir mejorando PymeGuía antes de lanzarla. ¡Que sigas teniendo tu negocio en orden!</p>
+    </div>
+  </div>
+
+<script>
+(function () {
+  // Estrellas
+  var starWrap = document.getElementById('starRating');
+  var stars = Array.prototype.slice.call(starWrap.querySelectorAll('.star'));
+  var ratingLabel = document.getElementById('ratingLabel');
+  var ratingWords = { 1: 'Necesita bastante trabajo', 2: 'Le falta bastante', 3: 'Está bien', 4: 'Muy buena', 5: 'Excelente' };
+  function paintStars(v) {
+    stars.forEach(function (s) { s.classList.toggle('filled', Number(s.getAttribute('data-v')) <= v); });
+    ratingLabel.textContent = v ? ratingWords[v] : '';
+  }
+  stars.forEach(function (s) {
+    s.querySelector('input').addEventListener('change', function () { paintStars(Number(s.getAttribute('data-v'))); });
+    s.addEventListener('mouseenter', function () { paintStars(Number(s.getAttribute('data-v'))); });
+  });
+  starWrap.addEventListener('mouseleave', function () {
+    var checked = starWrap.querySelector('input:checked');
+    paintStars(checked ? Number(checked.value) : 0);
+  });
+
+  // Envío: se guarda en Netlify Forms, sin abrir ningún programa de correo
+  var form = document.getElementById('feedbackForm');
+  var submitBtn = document.getElementById('submitBtn');
+  var statusMsg = document.getElementById('statusMsg');
+  var card = document.getElementById('card');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (submitBtn.disabled) return;
+    statusMsg.textContent = '';
+    statusMsg.classList.remove('error');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando...';
+    var body = new URLSearchParams(new FormData(form)).toString();
+    fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body
+    }).then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      card.classList.add('done');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }).catch(function () {
+      statusMsg.textContent = 'No pudimos enviar tu devolución. Revisa tu conexión e inténtalo de nuevo: tus respuestas siguen aquí.';
+      statusMsg.classList.add('error');
+    }).then(function () {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar mi devolución';
+    });
+  });
+})();
+</script>
+</body>
+</html>
